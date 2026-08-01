@@ -6,6 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { Profile } from '@/types/database';
 
+import Logo from '@/components/ui/Logo';
+
 const sidebarLinks = [
   {
     href: '/dashboard',
@@ -94,8 +96,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen pt-20">
-      <div className="flex">
+    <div className="min-h-screen bg-[#eef0f8] flex flex-col">
+      {/* Sticky Dashboard Header */}
+      <header className="sticky top-0 left-0 right-0 h-16 bg-[#eef0f8]/90 backdrop-blur-md border-b border-purple-200/30 flex items-center justify-between px-6 z-30 lg:px-10">
+        <div className="flex items-center gap-3">
+          {/* Mobile Menu Hamburger Trigger */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden w-10 h-10 neu-convex rounded-xl flex items-center justify-center border border-white/80 shadow-sm text-slate-800 active:scale-95 transition-all"
+            aria-label="Open sidebar"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          
+          <Logo size="sm" />
+        </div>
+
+        {/* Right Side Avatar / Profile Preview */}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard/profile"
+            className="w-10 h-10 neu-convex rounded-xl flex items-center justify-center text-purple-700 font-extrabold text-sm border border-white/80 shadow-sm hover:scale-105 active:scale-95 transition-all"
+          >
+            {profile?.full_name?.charAt(0)?.toUpperCase() || '?'}
+          </Link>
+        </div>
+      </header>
+
+      <div className="flex flex-1 relative">
         {/* Mobile overlay */}
         {sidebarOpen && (
           <div
@@ -106,7 +136,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* 3D Neumorphic Sidebar */}
         <aside
-          className={`fixed top-20 left-0 bottom-0 w-72 bg-[#eef0f8] border-r border-purple-200/40 z-40 transform transition-transform duration-300 lg:translate-x-0 ${
+          className={`fixed top-16 left-0 bottom-0 w-72 bg-[#eef0f8] border-r border-purple-200/40 z-40 transform transition-transform duration-300 lg:translate-x-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -166,16 +196,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
           </div>
         </aside>
-
-        {/* Mobile menu toggle */}
-        <button
-          onClick={() => setSidebarOpen(true)}
-          className="fixed bottom-6 left-6 z-30 lg:hidden w-12 h-12 rounded-2xl bg-slate-950 flex items-center justify-center shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] active:scale-95 transition-all"
-        >
-          <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
 
         {/* Main content */}
         <main className="flex-1 lg:ml-72 p-6 lg:p-10">

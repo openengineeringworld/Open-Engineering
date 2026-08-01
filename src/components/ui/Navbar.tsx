@@ -32,6 +32,10 @@ export default function Navbar() {
   const [user, setUser] = useState<any>(null);
   const pathname = usePathname();
 
+  if (pathname?.startsWith('/dashboard')) {
+    return null;
+  }
+
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
