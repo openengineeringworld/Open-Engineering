@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '@/components/ui/Logo';
+import { createClient } from '@/lib/supabase/client';
 
 const footerLinks = {
   company: [
@@ -23,6 +24,7 @@ const footerLinks = {
 export default function Footer() {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [statusMsg, setStatusMsg] = useState('');
   const pathname = usePathname();
 
   // Hide footer on dashboard routes as they have their own layout
@@ -30,12 +32,35 @@ export default function Footer() {
     return null;
   }
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim()) {
+    if (!email.trim()) return;
+    setStatusMsg('');
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('newsletter_subscribers')
+        .insert([{ email: email.trim() }]);
+
+      if (error) {
+        if (error.code === '23505') {
+          setStatusMsg('You are already subscribed!');
+        } else {
+          setStatusMsg('Failed: ' + error.message);
+        }
+        return;
+      }
+
       setSubscribed(true);
-      setTimeout(() => setSubscribed(false), 4000);
+      setStatusMsg('Thank you for subscribing! 🎉');
       setEmail('');
+      setTimeout(() => {
+        setSubscribed(false);
+        setStatusMsg('');
+      }, 5000);
+    } catch (err) {
+      setStatusMsg('An error occurred. Please try again.');
     }
   };
 
@@ -72,6 +97,11 @@ export default function Footer() {
                   {subscribed ? 'Subscribed! 🎉' : 'Subscribe'}
                 </button>
               </form>
+              {statusMsg && (
+                <p className={`text-xs mt-3 font-extrabold ${subscribed ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {statusMsg}
+                </p>
+              )}
             </div>
           </div>
         </div>
