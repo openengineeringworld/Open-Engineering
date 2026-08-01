@@ -1,0 +1,162 @@
+'use client';
+
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import FadeIn from '@/components/animations/FadeIn';
+
+const internships = [
+  {
+    id: 'web-intern',
+    title: 'Full Stack Web Development Intern',
+    category: 'Engineering Cohort',
+    duration: '3 Months',
+    mode: 'Remote (Flexible)',
+    stipend: 'Performance Stipend + Certificate',
+    desc: 'Work alongside our core engineering team to build real-world web applications. Master Next.js 16, Supabase, Tailwind CSS, and production CI/CD workflows.',
+    learn: [
+      'Next.js 16 App Router & React 19',
+      'Supabase Database & Authentication',
+      'Git Branching & Team Pull Requests',
+      'Production Deployment & Monitoring',
+    ],
+    icon: (
+      <svg className="w-10 h-10 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 48 48" fill="none">
+        <path d="M24 6L42 16L24 26L6 16L24 6Z" className="fill-indigo-100 stroke-indigo-600" strokeWidth="2.5" strokeLinejoin="round" />
+        <path d="M12 20V32C12 32 18 38 24 38C30 38 36 32 36 32V20" className="stroke-indigo-600" strokeWidth="2.5" strokeLinecap="round" />
+        <path d="M38 18.5V30" className="stroke-purple-600" strokeWidth="2.5" strokeLinecap="round" />
+        <circle cx="38" cy="32" r="2.5" className="fill-purple-600" />
+      </svg>
+    ),
+  },
+  {
+    id: 'marketing-intern',
+    title: 'Growth Marketing & Community Intern',
+    category: 'Community & Growth',
+    duration: '2 Months',
+    mode: 'Remote (Flexible)',
+    stipend: 'Growth Incentive + Certificate',
+    desc: 'Drive growth across our college community hubs across India. Lead social media strategies, campus ambassador outreach, and event marketing.',
+    learn: [
+      'Social Media Engine & Content Creation',
+      'College Campus Community Building',
+      'Digital Marketing Analytics & SEO',
+      'Event Planning & Partnership Outreach',
+    ],
+    icon: (
+      <svg className="w-10 h-10 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 48 48" fill="none">
+        <path d="M6 42H42" className="stroke-slate-400" strokeWidth="2.5" strokeLinecap="round" />
+        <rect x="10" y="26" width="6" height="16" rx="2" className="fill-purple-200 stroke-purple-600" strokeWidth="2" />
+        <rect x="21" y="18" width="6" height="24" rx="2" className="fill-indigo-200 stroke-indigo-600" strokeWidth="2" />
+        <rect x="32" y="10" width="6" height="32" rx="2" className="fill-purple-600 stroke-purple-800" strokeWidth="2" />
+        <path d="M8 22L19 14L28 18L40 6" className="stroke-purple-600" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+];
+
+export default function InternshipPage() {
+  return (
+    <>
+      <section className="section pt-36 pb-12">
+        <div className="container mx-auto px-6">
+          <FadeIn className="max-w-4xl mx-auto">
+            <Link
+              href="/career"
+              className="neu-flat px-4 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-primary transition-colors inline-flex items-center gap-2 mb-8 border border-purple-200/50"
+            >
+              <span>← Back to Career Hub</span>
+            </Link>
+
+            <span className="badge badge-primary mb-4">Hands-On Learning</span>
+            <h1 className="text-4xl sm:text-5xl font-extrabold mb-6">
+              Internship <span className="gradient-text">Programs</span>
+            </h1>
+            <p className="text-text-muted text-lg leading-relaxed font-normal">
+              Gain real-world engineering and product launch experience while still in college. 
+              Build real products, work in production repositories, and get certified.
+            </p>
+          </FadeIn>
+        </div>
+      </section>
+
+      <section className="section-sm pb-24">
+        <div className="container mx-auto px-6 max-w-4xl space-y-8">
+          {internships.map((intern, index) => (
+            <motion.div
+              key={intern.id}
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              whileHover={{ y: -4 }}
+              className="neu-card p-8 sm:p-10 border border-purple-300/40 shadow-[8px_8px_20px_rgba(147,51,234,0.12),-8px_-8px_20px_#ffffff] hover:shadow-[12px_12px_24px_rgba(147,51,234,0.22),-12px_-12px_24px_#ffffff] transition-all duration-300 group"
+            >
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-6">
+                <div className="flex items-start gap-5">
+                  <div className="w-16 h-16 sm:w-18 sm:h-18 neu-convex rounded-2xl p-3 flex items-center justify-center border border-purple-300/40 shadow-[5px_5px_14px_rgba(147,51,234,0.18),-5px_-5px_14px_#ffffff] shrink-0">
+                    {intern.icon}
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold uppercase tracking-wider text-primary mb-1 block">
+                      {intern.category}
+                    </span>
+                    <h2 className="text-2xl font-extrabold text-text tracking-tight mb-2 group-hover:text-primary transition-colors">
+                      {intern.title}
+                    </h2>
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="badge badge-primary text-xs font-bold">{intern.duration}</span>
+                      <span className="text-xs font-semibold text-slate-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+                        📍 {intern.mode}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+                        📜 {intern.stipend}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-text-muted text-sm leading-relaxed mb-6 font-normal">
+                {intern.desc}
+              </p>
+
+              {/* Learning Outcomes Grid */}
+              <div className="mb-6">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary mb-2.5">
+                  Key Skills & Learning Outcomes:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {intern.learn.map((item) => (
+                    <div
+                      key={item}
+                      className="neu-flat px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-700 flex items-center gap-2.5 border border-purple-200/50"
+                    >
+                      <svg className="w-4 h-4 text-purple-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 100% Solid Black CTA Button */}
+              <div className="pt-5 border-t border-purple-200/40 flex justify-end">
+                <a
+                  href={`mailto:openengineering9@gmail.com?subject=Internship Application: ${encodeURIComponent(intern.title)}`}
+                  className="w-full sm:w-auto py-3.5 px-6 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] hover:shadow-[6px_6px_18px_rgba(0,0,0,0.5),-6px_-6px_18px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all group/btn shrink-0"
+                >
+                  <span>Apply for Internship</span>
+                  <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
+                </a>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+    </>
+  );
+}
