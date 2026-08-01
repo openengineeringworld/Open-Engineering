@@ -81,7 +81,7 @@ export default function SettingsPage() {
                 type={showPassword ? 'text' : 'password'}
                 required
                 minLength={6}
-                className="neu-input pr-12 py-3.5 px-4 text-sm border border-purple-200/60 text-slate-900"
+                className="neu-input !pr-12 py-3.5 px-4 text-sm border border-purple-200/60 text-slate-900"
                 placeholder="Min 6 characters"
               />
               <button
@@ -111,7 +111,7 @@ export default function SettingsPage() {
                 type={showConfirm ? 'text' : 'password'}
                 required
                 minLength={6}
-                className="neu-input pr-12 py-3.5 px-4 text-sm border border-purple-200/60 text-slate-900"
+                className="neu-input !pr-12 py-3.5 px-4 text-sm border border-purple-200/60 text-slate-900"
                 placeholder="Confirm password"
               />
               <button

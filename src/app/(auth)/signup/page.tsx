@@ -64,7 +64,7 @@ export default function SignUpPage() {
               type={showPassword ? 'text' : 'password'}
               required
               minLength={6}
-              className="neu-input pr-12"
+              className="neu-input !pr-12"
               placeholder="Min 6 characters"
             />
             <button

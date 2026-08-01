@@ -72,7 +72,7 @@ function LoginForm() {
               name="password"
               type={showPassword ? 'text' : 'password'}
               required
-              className="neu-input pr-12"
+              className="neu-input !pr-12"
               placeholder="Your password"
             />
             <button

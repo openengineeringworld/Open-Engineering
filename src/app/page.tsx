@@ -141,7 +141,7 @@ function Hero() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="College name, e.g. IIT, NIT, MIT..."
-                  className="neu-input pl-11 pr-4 sm:pr-40 py-3.5 sm:py-4 text-xs sm:text-sm rounded-xl w-full border border-purple-200/60 outline-none text-slate-900"
+                  className="neu-input !pl-11 pr-4 sm:pr-40 py-3.5 sm:py-4 text-xs sm:text-sm rounded-xl w-full border border-purple-200/60 outline-none text-slate-900"
                 />
               </div>
               <button

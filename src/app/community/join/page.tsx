@@ -188,7 +188,7 @@ export default function JoinCommunityPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="neu-input pl-12 pr-5 py-4 rounded-xl text-sm w-full outline-none text-slate-800 border border-purple-200/60"
+            className="neu-input !pl-12 pr-5 py-4 rounded-xl text-sm w-full outline-none text-slate-800 border border-purple-200/60"
             placeholder="Search for your college name, city, or state..."
           />
         </div>
