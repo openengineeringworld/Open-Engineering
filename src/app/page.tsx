@@ -34,9 +34,9 @@ function Hero() {
         <div className="text-center max-w-4xl mx-auto">
           {/* Live Network Status Badge */}
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full neu-convex text-xs font-extrabold text-slate-800 mb-8 border border-purple-200/60 shadow-[4px_4px_12px_rgba(147,51,234,0.12),-4px_-4px_12px_#ffffff]">
               <span className="flex h-2.5 w-2.5 relative">
@@ -52,9 +52,9 @@ function Hero() {
 
           {/* Unified Single-Color Headline */}
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
             className="mb-6 max-w-4xl mx-auto text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.12] text-slate-950"
           >
             <span className="block mb-1">
@@ -67,19 +67,20 @@ function Hero() {
 
           {/* Clean, Fluid Subtitle for Mobile & Desktop */}
           <motion.p
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="max-w-2xl mx-auto mb-10 text-slate-700 text-base sm:text-lg leading-relaxed font-normal px-2"
+            transition={{ duration: 0.7, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+            className="max-w-2xl mx-auto mb-10 text-slate-700 text-sm sm:text-base leading-relaxed font-normal px-2"
           >
-            Empowering student engineers to build production hardware — from <span className="font-extrabold text-purple-700">Soil AI Sensors</span> and <span className="font-extrabold text-purple-700">Vehicle Emergency IoT</span> to scalable <span className="font-extrabold text-purple-700">Next.js Web Applications</span>.
+            An open ecosystem bridging the gap between classroom theory and real-world engineering. 
+            Collaborate with fellow student engineers, access verified study vaults, and build industrial-grade projects.
           </motion.p>
 
           {/* CTA Buttons */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
+            transition={{ duration: 0.7, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 sm:mb-14"
           >
             <Link
@@ -96,18 +97,18 @@ function Hero() {
               href="/products"
               className="w-full sm:w-auto py-4 px-8 rounded-xl neu-card text-slate-800 hover:text-purple-900 font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 border border-purple-300/40 shadow-[4px_4px_14px_rgba(147,51,234,0.12),-4px_-4px_14px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
-              <span>Discover Our Products ⚡</span>
+              <span>Discover Our Products</span>
             </Link>
           </motion.div>
 
           {/* Clean 3D Neumorphic College Search Feature Section */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.2 }}
-            className="neu-card p-5 sm:p-8 max-w-3xl mx-auto text-left border border-purple-300/40 shadow-[12px_12px_28px_rgba(147,51,234,0.14),-12px_-12px_28px_#ffffff]"
+            transition={{ duration: 0.8, delay: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            className="neu-card p-5 sm:p-7 max-w-2xl mx-auto text-left border border-purple-300/40 shadow-[12px_12px_28px_rgba(147,51,234,0.14),-12px_-12px_28px_#ffffff]"
           >
-            <div className="flex items-center gap-3.5 mb-4">
+            <div className="flex items-center gap-3 mb-4">
               <div className="w-11 h-11 sm:w-12 sm:h-12 neu-convex rounded-2xl flex items-center justify-center border border-purple-300/40 text-purple-700 font-black shrink-0 shadow-sm">
                 <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0v-4m0 4h4m-4-4l4 4" />

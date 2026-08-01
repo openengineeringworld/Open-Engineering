@@ -19,19 +19,19 @@ export default function FadeIn({
   className = '',
 }: FadeInProps) {
   const directions = {
-    up: { y: 30 },
-    down: { y: -30 },
-    left: { x: 30 },
-    right: { x: -30 },
+    up: { y: 12 },
+    down: { y: -12 },
+    left: { x: 12 },
+    right: { x: -12 },
     none: {},
   };
 
   return (
     <motion.div
       initial={{ opacity: 0, ...directions[direction] }}
-      whileInView={{ opacity: 1, x: 0, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration, delay, ease: [0.25, 0.1, 0.25, 1] }}
+      animate={{ opacity: 1, x: 0, y: 0 }}
+      viewport={{ once: true, margin: '-20px' }}
+      transition={{ duration, delay, ease: [0.16, 1, 0.3, 1] }}
       className={className}
     >
       {children}

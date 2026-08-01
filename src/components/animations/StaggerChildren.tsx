@@ -11,14 +11,14 @@ interface StaggerChildrenProps {
 
 export default function StaggerChildren({
   children,
-  staggerDelay = 0.1,
+  staggerDelay = 0.08,
   className = '',
 }: StaggerChildrenProps) {
   return (
     <motion.div
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: '-50px' }}
+      viewport={{ once: true, margin: '-10px' }}
       variants={{
         hidden: {},
         visible: {
@@ -44,11 +44,11 @@ export function StaggerItem({
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: 20 },
+        hidden: { opacity: 0, y: 12 },
         visible: {
           opacity: 1,
           y: 0,
-          transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1] },
+          transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] },
         },
       }}
       className={className}

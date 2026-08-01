@@ -444,3 +444,19 @@ body {
   border-radius: 2px;
 }
 
+/* Ensure top-level page headers clear the fixed navbar on both desktop and mobile */
+.section.pt-36,
+.section.pt-32,
+.section.pt-28 {
+  padding-top: 144px !important;
+}
+
+@media (max-width: 640px) {
+  .section.pt-36,
+  .section.pt-32,
+  .section.pt-28 {
+    padding-top: 116px !important;
+  }
+}
+
+
