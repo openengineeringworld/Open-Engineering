@@ -136,11 +136,23 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* 3D Neumorphic Sidebar */}
         <aside
-          className={`fixed top-16 left-0 bottom-0 w-72 bg-[#eef0f8] border-r border-purple-200/40 z-40 transform transition-transform duration-300 lg:translate-x-0 ${
+          className={`fixed top-0 lg:top-16 left-0 bottom-0 w-72 bg-[#eef0f8] border-r border-purple-200/40 z-40 transform transition-transform duration-300 lg:translate-x-0 ${
             sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
           <div className="flex flex-col h-full p-5">
+            {/* Mobile close button inside the sidebar */}
+            <div className="flex items-center justify-between lg:hidden mb-4 pb-2 border-b border-purple-200/30">
+              <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest">Dashboard Menu</span>
+              <button
+                onClick={() => setSidebarOpen(false)}
+                className="w-8 h-8 rounded-xl neu-convex border border-purple-200/40 shadow-[2px_2px_6px_rgba(120,80,180,0.1),-2px_-2px_6px_#ffffff] flex items-center justify-center text-slate-800 hover:text-purple-700 active:scale-95 transition-all text-xs font-bold"
+                aria-label="Close menu"
+              >
+                ✕
+              </button>
+            </div>
+
             {/* 3D Neumorphic Profile Preview Card */}
             <div className="neu-card p-5 mb-6 border border-purple-300/40 shadow-[6px_6px_16px_rgba(147,51,234,0.1),-6px_-6px_16px_#ffffff]">
               <div className="flex items-center gap-3.5">
@@ -166,28 +178,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </div>
             )}
 
-            {/* 3D Neumorphic Nav Links */}
+            {/* 3D Interactive Tactile Nav Links */}
             <nav className="flex-1 space-y-2">
-              {sidebarLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-extrabold transition-all duration-200 ${
-                    pathname === link.href
-                      ? 'neu-pressed text-purple-950 border border-purple-300/60 shadow-[inset_3px_3px_6px_rgba(147,51,234,0.12),inset_-3px_-3px_6px_#ffffff]'
-                      : 'text-slate-600 hover:text-purple-950 hover:bg-white/60 neu-card border border-white/80 shadow-[3px_3px_8px_rgba(120,80,180,0.08),-3px_-3px_8px_#ffffff]'
-                  }`}
-                >
-                  {link.icon}
-                  {link.label}
-                </Link>
-              ))}
+              {sidebarLinks.map((link) => {
+                const active = pathname === link.href;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-extrabold transition-all duration-200 ${
+                      active
+                        ? 'neu-pressed text-purple-950 border border-purple-300/40 shadow-[inset_3px_3px_6px_rgba(147,51,234,0.12),inset_-3px_-3px_6px_#ffffff]'
+                        : 'text-slate-600 hover:text-purple-950 hover:bg-[#eef0f8] hover:border hover:border-white/80 hover:shadow-[3px_3px_10px_rgba(120,80,180,0.08),-3px_-3px_10px_#ffffff] border border-transparent'
+                    }`}
+                  >
+                    {link.icon}
+                    {link.label}
+                  </Link>
+                );
+              })}
             </nav>
 
-            {/* 3D Neumorphic Logout Button */}
+            {/* 3D Interactive Logout Button */}
             <button
               onClick={handleSignOut}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-extrabold text-rose-700 hover:text-rose-900 neu-card border border-rose-200/60 shadow-[3px_3px_8px_rgba(225,29,72,0.08),-3px_-3px_8px_#ffffff] hover:scale-[1.01] active:scale-[0.99] transition-all"
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-extrabold text-rose-600 hover:text-rose-700 hover:bg-[#eef0f8] hover:border hover:border-white/80 hover:shadow-[3px_3px_10px_rgba(225,29,72,0.06),-3px_-3px_10px_#ffffff] border border-transparent active:scale-95 transition-all"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
