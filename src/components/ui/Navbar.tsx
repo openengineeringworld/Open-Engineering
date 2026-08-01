@@ -232,24 +232,25 @@ export default function Navbar() {
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 26, stiffness: 220 }}
-              className="fixed top-0 right-0 bottom-0 w-80 max-w-[85vw] z-50 bg-[#eef0f8] shadow-[-12px_0_36px_rgba(120,80,180,0.22)] border-l border-white/80 p-6 pt-6 lg:hidden overflow-y-auto flex flex-col justify-between"
+              transition={{ type: 'tween', ease: 'easeOut', duration: 0.22 }}
+              className="fixed inset-y-0 right-0 w-80 max-w-[85vw] z-50 bg-[#eef0f8] shadow-[-12px_0_36px_rgba(120,80,180,0.22)] border-l border-white/80 p-5 lg:hidden flex flex-col"
             >
-              <div>
-                {/* 3D Neumorphic Drawer Header */}
-                <div className="flex items-center justify-between pb-6 border-b border-purple-200/40 mb-6">
-                  <div className="neu-convex p-2 rounded-2xl border border-white/80 shadow-sm">
-                    <Logo size="md" />
-                  </div>
-                  <button
-                    onClick={() => setMobileOpen(false)}
-                    className="w-10 h-10 neu-convex rounded-2xl flex items-center justify-center border border-purple-200/60 shadow-[3px_3px_8px_rgba(120,80,180,0.15),-3px_-3px_8px_#ffffff] text-slate-800 font-extrabold hover:text-purple-700 active:scale-95 transition-all"
-                    aria-label="Close menu"
-                  >
-                    ✕
-                  </button>
+              {/* 3D Neumorphic Drawer Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-purple-200/40 mb-3 shrink-0">
+                <div className="neu-convex p-1.5 rounded-2xl border border-white/80 shadow-sm">
+                  <Logo size="sm" />
                 </div>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="w-9 h-9 neu-convex rounded-2xl flex items-center justify-center border border-purple-200/60 shadow-[3px_3px_8px_rgba(120,80,180,0.15),-3px_-3px_8px_#ffffff] text-slate-800 font-extrabold hover:text-purple-700 active:scale-95 transition-all"
+                  aria-label="Close menu"
+                >
+                  ✕
+                </button>
+              </div>
 
+              {/* Scrollable Links Section */}
+              <div className="flex-1 overflow-y-auto py-2 space-y-3 pr-1 select-none scrollbar-thin">
                 {/* 3D Neumorphic Navigation Links List */}
                 <div className="flex flex-col gap-3">
                   {navLinks.map((link) =>
@@ -293,18 +294,18 @@ export default function Navbar() {
               </div>
 
               {/* 3D Neumorphic Drawer Footer Action Buttons */}
-              <div className="pt-6 border-t border-purple-200/40 mt-6 space-y-3">
+              <div className="pt-4 border-t border-purple-200/40 mt-auto space-y-2.5 shrink-0">
                 {user ? (
                   <>
                     <Link
                       href="/dashboard"
-                      className="w-full py-3.5 rounded-2xl neu-convex text-purple-950 font-bold text-xs text-center block border border-purple-200/60 shadow-[4px_4px_12px_rgba(120,80,180,0.12),-4px_-4px_12px_#ffffff]"
+                      className="w-full py-3 rounded-2xl neu-convex text-purple-950 font-bold text-xs text-center block border border-purple-200/60 shadow-[4px_4px_12px_rgba(120,80,180,0.12),-4px_-4px_12px_#ffffff]"
                     >
                       Dashboard
                     </Link>
                     <button
                       onClick={handleSignOut}
-                      className="w-full py-3.5 rounded-2xl neu-card text-rose-700 font-bold text-xs text-center block border border-rose-200/60 shadow-[3px_3px_8px_rgba(225,29,72,0.08),-3px_-3px_8px_#ffffff]"
+                      className="w-full py-3 rounded-2xl neu-card text-rose-700 font-bold text-xs text-center block border border-rose-200/60 shadow-[3px_3px_8px_rgba(225,29,72,0.08),-3px_-3px_8px_#ffffff]"
                     >
                       Sign Out
                     </button>
@@ -313,13 +314,13 @@ export default function Navbar() {
                   <>
                     <Link
                       href="/signup?redirect=/onboarding"
-                      className="w-full py-3.5 rounded-2xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs text-center block shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] transition-all"
+                      className="w-full py-3.5 rounded-2xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs text-center block shadow-[4px_4px_14_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] transition-all"
                     >
                       Join Community Hub
                     </Link>
                     <Link
                       href="/login"
-                      className="w-full py-3.5 rounded-2xl neu-convex text-slate-900 font-bold text-xs text-center block border border-purple-200/60 shadow-[4px_4px_12px_rgba(120,80,180,0.12),-4px_-4px_12px_#ffffff]"
+                      className="w-full py-3 rounded-2xl neu-convex text-slate-900 font-bold text-xs text-center block border border-purple-200/60 shadow-[4px_4px_12px_rgba(120,80,180,0.12),-4px_-4px_12px_#ffffff]"
                     >
                       Sign In
                     </Link>

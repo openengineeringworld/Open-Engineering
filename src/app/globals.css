@@ -410,3 +410,37 @@ body {
   background: linear-gradient(90deg, transparent, rgba(147, 51, 234, 0.2), transparent);
   margin: 24px 0;
 }
+
+/* ========================================
+   Mobile Scrolling & GPU Optimization
+   ======================================== */
+
+.neu-card,
+.btn,
+.neu-convex,
+.neu-flat,
+.neu-pressed {
+  will-change: transform, box-shadow;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
+}
+
+.overflow-y-auto,
+.overflow-x-auto,
+.tab-list {
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain;
+}
+
+/* Optimize scrollbar aesthetics on mobile */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(147, 51, 234, 0.2);
+  border-radius: 2px;
+}
+
