@@ -15,20 +15,13 @@ function Hero() {
 
   return (
     <section className="relative pt-36 pb-20 min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Neumorphic Ambient Orbs */}
-      <div className="absolute inset-0 bg-grid opacity-50 pointer-events-none" />
+      {/* Neumorphic Ambient Grids */}
+      <div className="absolute inset-0 bg-grid opacity-40 pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-radial pointer-events-none" />
       
-      <motion.div
-        animate={{ y: [0, -18, 0], scale: [1, 1.06, 1] }}
-        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-1/4 left-1/6 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"
-      />
-      <motion.div
-        animate={{ y: [0, 18, 0], scale: [1, 1.08, 1] }}
-        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute bottom-1/4 right-1/6 w-96 h-96 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none"
-      />
+      {/* floating Neumorphic Elements */}
+      <div className="hidden lg:block absolute left-12 top-1/3 w-16 h-16 rounded-full neu-convex border border-white/60 shadow-[6px_6px_16px_rgba(120,80,180,0.06),-6px_-6px_16px_#ffffff] pointer-events-none" />
+      <div className="hidden lg:block absolute right-16 top-1/2 w-14 h-14 rounded-2xl neu-convex border border-white/60 shadow-[6px_6px_16px_rgba(120,80,180,0.06),-6px_-6px_16px_#ffffff] rotate-12 pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center max-w-4xl mx-auto">
@@ -38,19 +31,19 @@ function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full neu-convex text-xs font-extrabold text-slate-800 mb-8 border border-purple-200/60 shadow-[4px_4px_12px_rgba(147,51,234,0.12),-4px_-4px_12px_#ffffff]">
+            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full neu-convex text-xs font-bold text-slate-800 mb-8 border border-white/80 shadow-[4px_4px_10px_rgba(120,80,180,0.06),-4px_-4px_10px_#ffffff]">
               <span className="flex h-2.5 w-2.5 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple-600" />
               </span>
               <span>Open Engineering Platform</span>
-              <span className="bg-purple-100 text-purple-900 px-2.5 py-0.5 rounded-full text-[11px] font-black border border-purple-200/80">
+              <span className="bg-slate-100 text-slate-900 px-2.5 py-0.5 rounded-full text-[11px] font-black border border-slate-200/80">
                 50+ Hubs Live
               </span>
             </div>
           </motion.div>
 
-          {/* Unified Single-Color Headline */}
+          {/* Unified Single-Color Headline with Custom Cursive Accent */}
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
@@ -60,7 +53,7 @@ function Hero() {
             <span className="block mb-1">
               Learn Engineering.
             </span>
-            <span className="block text-slate-950">
+            <span className="block text-purple-600 font-cursive text-5xl sm:text-7xl md:text-8xl tracking-wide mt-2">
               Build Real Solutions.
             </span>
           </motion.h1>
@@ -85,7 +78,7 @@ function Hero() {
           >
             <Link
               href="/community/join"
-              className="w-full sm:w-auto py-4 px-8 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all group"
+              className="w-full sm:w-auto py-4 px-8 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 shadow-[5px_5px_12px_rgba(0,0,0,0.25),-5px_-5px_12px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all group"
             >
               <span>Explore College Hubs</span>
               <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -95,7 +88,7 @@ function Hero() {
 
             <Link
               href="/products"
-              className="w-full sm:w-auto py-4 px-8 rounded-xl neu-card text-slate-800 hover:text-purple-900 font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 border border-purple-300/40 shadow-[4px_4px_14px_rgba(147,51,234,0.12),-4px_-4px_14px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="w-full sm:w-auto py-4 px-8 rounded-xl neu-card text-slate-800 hover:text-purple-900 font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 border border-white/80 shadow-[6px_6px_14px_rgba(120,80,180,0.1),-6px_-6px_14px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               <span>Discover Our Products</span>
             </Link>

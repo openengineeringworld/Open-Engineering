@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Caveat:wght@700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -59,6 +59,10 @@ body {
    ======================================== */
 
 @layer components {
+  .font-cursive {
+    font-family: 'Caveat', cursive;
+  }
+
   .neu-flat {
     background-color: #eef0f8;
     box-shadow: 7px 7px 18px rgba(120, 80, 180, 0.16), -7px -7px 18px #ffffff;
@@ -280,18 +284,18 @@ body {
 
   .bg-grid {
     background-image: 
-      linear-gradient(rgba(147, 51, 234, 0.06) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(147, 51, 234, 0.06) 1px, transparent 1px);
+      linear-gradient(rgba(148, 163, 184, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.05) 1px, transparent 1px);
     background-size: 60px 60px;
   }
 
   .bg-dots {
-    background-image: radial-gradient(rgba(147, 51, 234, 0.15) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px);
     background-size: 30px 30px;
   }
 
   .bg-gradient-radial {
-    background: radial-gradient(ellipse at 50% 0%, rgba(147, 51, 234, 0.15) 0%, transparent 65%);
+    background: radial-gradient(ellipse at 50% 0%, rgba(148, 163, 184, 0.08) 0%, transparent 65%);
   }
 
   /* ========================================
