@@ -390,11 +390,14 @@ function MembersTab({ communityId }: { communityId: string }) {
     async function load() {
       const { data } = await supabase
         .from('community_members')
-        .select('*, profile:profiles(full_name, profile_image, branch, year)')
+        .select('*, profile:profiles(full_name, profile_image, branch, year, status)')
         .eq('community_id', communityId)
         .order('joined_at');
 
-      if (data) setMembers(data.map((m) => ({ ...m, profile: Array.isArray(m.profile) ? m.profile[0] : m.profile })));
+      if (data) {
+        const mapped = data.map((m) => ({ ...m, profile: Array.isArray(m.profile) ? m.profile[0] : m.profile }));
+        setMembers(mapped.filter((m) => m.profile?.status === 'approved'));
+      }
     }
     load();
   // eslint-disable-next-line react-hooks/exhaustive-deps
