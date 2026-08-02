@@ -19,6 +19,7 @@ export type College = {
   name: string;
   city: string;
   state: string;
+  district?: string | null;
   added_by: string | null;
   created_at: string;
 };

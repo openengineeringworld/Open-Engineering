@@ -12,23 +12,56 @@ export default function OnboardingPage() {
   const [successData, setSuccessData] = useState<{ collegeName: string } | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
+  // College & District State
+  const [colleges, setColleges] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<string[]>([]);
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [filteredColleges, setFilteredColleges] = useState<any[]>([]);
+  const [selectedCollege, setSelectedCollege] = useState('');
+  const [showAddCollege, setShowAddCollege] = useState(false);
+
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
-    async function checkAuth() {
+    async function checkAuthAndLoadColleges() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        // Redirect unauthenticated user to signup/login first
         router.push('/signup?redirect=/onboarding');
         return;
       }
       setUserId(user.id);
+
+      // Fetch Seeded Colleges
+      const { data: collegeData } = await supabase
+        .from('colleges')
+        .select('*')
+        .order('name');
+
+      if (collegeData) {
+        setColleges(collegeData);
+        // Extract unique districts
+        const uniqueDists = Array.from(
+          new Set(collegeData.map((c: any) => c.district).filter(Boolean))
+        ) as string[];
+        setDistricts(uniqueDists.sort());
+      }
       setLoading(false);
     }
-    checkAuth();
+    checkAuthAndLoadColleges();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Filter colleges when district changes
+  useEffect(() => {
+    if (selectedDistrict) {
+      setFilteredColleges(colleges.filter((c) => c.district === selectedDistrict));
+      setSelectedCollege('');
+    } else {
+      setFilteredColleges([]);
+      setSelectedCollege('');
+    }
+  }, [selectedDistrict, colleges]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -37,14 +70,39 @@ export default function OnboardingPage() {
     setError('');
 
     const formData = new FormData(e.currentTarget);
-    const collegeName = (formData.get('college_name') as string).trim();
-    const city = (formData.get('city') as string).trim();
-    const state = (formData.get('state') as string).trim();
     const branch = (formData.get('branch') as string).trim();
     const year = (formData.get('year') as string).trim();
 
-    // 1. Update user profile with branch and year
-    await supabase
+    let collegeName = '';
+    let city = '';
+    let state = '';
+    let district = '';
+
+    if (showAddCollege) {
+      collegeName = (formData.get('college_name') as string).trim();
+      city = (formData.get('city') as string).trim();
+      state = (formData.get('state') as string).trim();
+      district = (formData.get('district') as string).trim();
+    } else {
+      if (!selectedCollege) {
+        setError('Please select a college from the list.');
+        setSubmitting(false);
+        return;
+      }
+      const matched = colleges.find((c) => c.name === selectedCollege);
+      if (!matched) {
+        setError('Selected college is invalid.');
+        setSubmitting(false);
+        return;
+      }
+      collegeName = matched.name;
+      city = matched.city;
+      state = matched.state;
+      district = matched.district || '';
+    }
+
+    // 1. Update user profile with branch and academic details
+    const { error: profileError } = await supabase
       .from('profiles')
       .update({
         branch,
@@ -55,7 +113,13 @@ export default function OnboardingPage() {
       })
       .eq('id', userId);
 
-    // 2. Check if college exists
+    if (profileError) {
+      setError(profileError.message);
+      setSubmitting(false);
+      return;
+    }
+
+    // 2. Check if college exists in database
     const { data: existingCollege } = await supabase
       .from('colleges')
       .select('*, community:communities(*)')
@@ -63,6 +127,12 @@ export default function OnboardingPage() {
       .maybeSingle();
 
     if (existingCollege) {
+      // Update profile college_id as well
+      await supabase
+        .from('profiles')
+        .update({ college_id: existingCollege.id })
+        .eq('id', userId);
+
       const comm = Array.isArray(existingCollege.community) ? existingCollege.community[0] : existingCollege.community;
       if (comm) {
         // Join existing community
@@ -75,7 +145,7 @@ export default function OnboardingPage() {
       // Insert new college (trigger auto-creates community)
       const { data: newCollege, error: collegeError } = await supabase
         .from('colleges')
-        .insert({ name: collegeName, city, state, added_by: userId })
+        .insert({ name: collegeName, city, state, district, added_by: userId })
         .select()
         .single();
 
@@ -84,6 +154,12 @@ export default function OnboardingPage() {
         setSubmitting(false);
         return;
       }
+
+      // Update profile college_id
+      await supabase
+        .from('profiles')
+        .update({ college_id: newCollege.id })
+        .eq('id', userId);
 
       // Fetch auto-created community and update status = 'pending'
       const { data: newCommunity } = await supabase
@@ -111,14 +187,14 @@ export default function OnboardingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center pt-24">
-        <div className="loading-spinner" />
+      <div className="min-h-screen flex items-center justify-center pt-24 bg-[#eef0f8]">
+        <div className="loading-spinner animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700" />
       </div>
     );
   }
 
   return (
-    <section className="section pt-36 pb-24 min-h-screen">
+    <section className="section pt-36 pb-24 min-h-screen bg-[#eef0f8]">
       <div className="container mx-auto px-6 max-w-xl">
         {successData ? (
           /* 3D Neumorphic Approval Confirmation Card */
@@ -154,7 +230,7 @@ export default function OnboardingPage() {
                 College & <span className="gradient-text">Community Setup</span>
               </h1>
               <p className="text-text-muted text-xs sm:text-sm font-normal leading-relaxed">
-                Enter your college address and academic details to register your campus engineering hub.
+                Choose your college district and select your campus to join or register your campus engineering hub.
               </p>
             </div>
 
@@ -165,43 +241,125 @@ export default function OnboardingPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              <div>
-                <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">
-                  College Full Name
-                </label>
-                <input
-                  name="college_name"
-                  required
-                  placeholder="e.g. Indian Institute of Technology Guwahati"
-                  className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900"
-                />
-              </div>
+              {!showAddCollege ? (
+                <>
+                  {/* Select District */}
+                  <div>
+                    <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">
+                      College District (Assam)
+                    </label>
+                    <select
+                      value={selectedDistrict}
+                      onChange={(e) => setSelectedDistrict(e.target.value)}
+                      required
+                      className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full"
+                    >
+                      <option value="">Select District</option>
+                      {districts.map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">
-                    City
-                  </label>
-                  <input
-                    name="city"
-                    required
-                    placeholder="e.g. Guwahati"
-                    className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900"
-                  />
-                </div>
+                  {/* Select College */}
+                  <div>
+                    <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">
+                      Select College / University
+                    </label>
+                    <select
+                      value={selectedCollege}
+                      onChange={(e) => setSelectedCollege(e.target.value)}
+                      disabled={!selectedDistrict}
+                      required
+                      className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="">
+                        {!selectedDistrict ? 'Select a district first' : 'Select College'}
+                      </option>
+                      {filteredColleges.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-800 uppercase tracking-wider mb-2">
-                    State
-                  </label>
-                  <input
-                    name="state"
-                    required
-                    placeholder="e.g. Assam"
-                    className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCollege(true)}
+                    className="text-purple-700 text-xs font-extrabold hover:underline"
+                  >
+                    Can&apos;t find your college? Add custom college →
+                  </button>
+                </>
+              ) : (
+                /* Add Custom College Form fields */
+                <div className="space-y-4 p-5 rounded-2xl neu-pressed border border-purple-200/40">
+                  <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest block mb-2">
+                    Custom College Information
+                  </span>
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+                      College Full Name
+                    </label>
+                    <input
+                      name="college_name"
+                      required={showAddCollege}
+                      placeholder="e.g. Indian Institute of Technology Guwahati"
+                      className="neu-input py-3 px-4 text-xs border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+                        City
+                      </label>
+                      <input
+                        name="city"
+                        required={showAddCollege}
+                        placeholder="e.g. Guwahati"
+                        className="neu-input py-3 px-4 text-xs border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+                        District
+                      </label>
+                      <input
+                        name="district"
+                        required={showAddCollege}
+                        placeholder="e.g. Kamrup Metropolitan"
+                        className="neu-input py-3 px-4 text-xs border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+                      State
+                    </label>
+                    <input
+                      name="state"
+                      required={showAddCollege}
+                      defaultValue="Assam"
+                      placeholder="e.g. Assam"
+                      className="neu-input py-3 px-4 text-xs border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowAddCollege(false)}
+                    className="text-purple-700 text-xs font-extrabold hover:underline"
+                  >
+                    ← Search existing colleges
+                  </button>
                 </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -223,7 +381,7 @@ export default function OnboardingPage() {
                   <select
                     name="year"
                     required
-                    className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#e5e7f2]"
+                    className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8]"
                   >
                     <option value="1st Year">1st Year</option>
                     <option value="2nd Year">2nd Year</option>
