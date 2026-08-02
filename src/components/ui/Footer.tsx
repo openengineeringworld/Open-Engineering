@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Logo from '@/components/ui/Logo';
-import { createClient } from '@/lib/supabase/client';
 
 const footerLinks = {
   company: [
@@ -22,47 +20,12 @@ const footerLinks = {
 };
 
 export default function Footer() {
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
-  const [statusMsg, setStatusMsg] = useState('');
   const pathname = usePathname();
 
   // Hide footer on dashboard routes as they have their own layout
   if (pathname?.startsWith('/dashboard')) {
     return null;
   }
-
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    setStatusMsg('');
-
-    try {
-      const supabase = createClient();
-      const { error } = await supabase
-        .from('newsletter_subscribers')
-        .insert([{ email: email.trim() }]);
-
-      if (error) {
-        if (error.code === '23505') {
-          setStatusMsg('You are already subscribed!');
-        } else {
-          setStatusMsg('Failed: ' + error.message);
-        }
-        return;
-      }
-
-      setSubscribed(true);
-      setStatusMsg('Thank you for subscribing! 🎉');
-      setEmail('');
-      setTimeout(() => {
-        setSubscribed(false);
-        setStatusMsg('');
-      }, 5000);
-    } catch (err) {
-      setStatusMsg('An error occurred. Please try again.');
-    }
-  };
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -71,40 +34,6 @@ export default function Footer() {
   return (
     <footer className="relative pt-16 pb-12 bg-background border-t border-border/40 mt-20">
       <div className="container mx-auto px-6">
-        {/* 1. Newsletter Subscription Neumorphic Card */}
-        <div className="neu-card p-6 sm:p-10 md:p-12 mb-12 sm:mb-16 relative overflow-hidden border border-purple-300/40 shadow-[8px_8px_22px_rgba(147,51,234,0.12),-8px_-8px_22px_#ffffff]">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-center">
-            <div className="lg:col-span-6 text-center sm:text-left">
-              <span className="badge badge-primary mb-3">Stay Updated</span>
-              <h3 className="text-2xl sm:text-3xl font-extrabold mb-2 text-slate-950">
-                Stay Ahead in <span className="gradient-text">Engineering</span>
-              </h3>
-              <p className="text-text-muted text-xs sm:text-sm leading-relaxed">
-                Join our newsletter to receive weekly project showcases, college hub updates, and career opportunities.
-              </p>
-            </div>
-            <div className="lg:col-span-6">
-              <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row items-center gap-3">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address..."
-                  required
-                  className="neu-input py-3.5 px-5 font-medium text-xs sm:text-sm flex-1 w-full border border-purple-200/60 outline-none"
-                />
-                <button type="submit" className="py-3.5 px-7 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm w-full sm:w-auto shrink-0 shadow-md transition-all">
-                  {subscribed ? 'Subscribed! 🎉' : 'Subscribe'}
-                </button>
-              </form>
-              {statusMsg && (
-                <p className={`text-xs mt-3 font-extrabold ${subscribed ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {statusMsg}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
 
         {/* 2. Main Footer Navigation Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 mb-16">
