@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import StaggerChildren, { StaggerItem } from '@/components/animations/StaggerChildren';
 
 export default function CommunitiesList({ initialCommunities }: { initialCommunities: any[] }) {
@@ -37,7 +38,7 @@ export default function CommunitiesList({ initialCommunities }: { initialCommuni
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12 p-6 rounded-2xl border border-purple-200/50 bg-[#eef0f8]/50 shadow-inner">
         <div>
           <label htmlFor="search" className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-            Search College Hubs
+            Search College / Communities
           </label>
           <input
             id="search"
@@ -73,20 +74,22 @@ export default function CommunitiesList({ initialCommunities }: { initialCommuni
         <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredCommunities.map((community) => (
             <StaggerItem key={community.id}>
-              <div className="neu-card p-6 border border-purple-300/40 shadow-[6px_6px_16px_rgba(147,51,234,0.12),-6px_-6px_16px_#ffffff] flex flex-col justify-between h-full group hover:scale-[1.01] transition-all duration-300">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-14 h-14 neu-convex rounded-2xl flex items-center justify-center text-primary font-black text-xl border border-purple-300/40 shadow-[4px_4px_10px_rgba(147,51,234,0.18),-4px_-4px_10px_#ffffff]">
-                    {community.college?.name?.charAt(0) || 'C'}
+              <Link href={`/community/${community.id}`} className="block h-full">
+                <div className="neu-card p-6 border border-purple-300/40 shadow-[6px_6px_16px_rgba(147,51,234,0.12),-6px_-6px_16px_#ffffff] flex flex-col justify-between h-full group hover:scale-[1.01] hover:shadow-[10px_10px_24px_rgba(147,51,234,0.15),-10px_-10px_24px_#ffffff] transition-all duration-300 cursor-pointer">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-14 h-14 neu-convex rounded-2xl flex items-center justify-center text-primary font-black text-xl border border-purple-300/40 shadow-[4px_4px_10px_rgba(147,51,234,0.18),-4px_-4px_10px_#ffffff]">
+                      {community.college?.name?.charAt(0) || 'C'}
+                    </div>
+                    <span className="badge badge-success text-xs font-bold shadow-sm">
+                      ● {community.member_count} Members
+                    </span>
                   </div>
-                  <span className="badge badge-success text-xs font-bold shadow-sm">
-                    ● {community.member_count} Members
-                  </span>
+                  <h3 className="font-extrabold text-lg mb-1 text-text group-hover:text-primary transition-colors">{community.name}</h3>
+                  <p className="text-text-muted text-xs font-normal">
+                    📍 {community.college?.city}, {community.college?.state}
+                  </p>
                 </div>
-                <h3 className="font-extrabold text-lg mb-1 text-text group-hover:text-primary transition-colors">{community.name}</h3>
-                <p className="text-text-muted text-xs font-normal">
-                  📍 {community.college?.city}, {community.college?.state}
-                </p>
-              </div>
+              </Link>
             </StaggerItem>
           ))}
         </StaggerChildren>

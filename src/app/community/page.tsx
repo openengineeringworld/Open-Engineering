@@ -123,13 +123,13 @@ export default async function CommunityPage() {
       <section className="section-sm pb-24">
         <div className="container mx-auto px-6">
           <FadeIn className="text-center mb-12">
-            <span className="badge badge-primary mb-3">Live Hubs</span>
+            <span className="badge badge-primary mb-3">Live Communities</span>
             <h2 className="text-3xl font-extrabold mb-3">
-              Active <span className="gradient-text">College Hubs</span>
+              Active <span className="gradient-text">College / Communities</span>
             </h2>
             <p className="text-text-muted text-sm font-normal">
               {communities && communities.length > 0
-                ? `${communities.length} college communities actively building together`
+                ? `${communities.length} college / communities actively building together`
                 : 'Be the first to pioneer a community for your college!'}
             </p>
           </FadeIn>

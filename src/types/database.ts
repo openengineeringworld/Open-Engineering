@@ -11,6 +11,7 @@ export type Profile = {
   profile_image: string | null;
   is_profile_complete: boolean;
   is_admin?: boolean;
+  status?: 'pending' | 'approved' | 'rejected' | null;
   created_at: string;
 };
 
