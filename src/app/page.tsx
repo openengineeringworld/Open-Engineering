@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import FadeIn from '@/components/animations/FadeIn';
@@ -11,8 +10,6 @@ import Logo from '@/components/ui/Logo';
 // Hero Section (Animated Typography & 3D Neumorphism Upgrade)
 // ========================================
 function Hero() {
-  const [searchQuery, setSearchQuery] = useState('');
-
   return (
     <section className="relative pt-36 pb-20 min-h-screen flex flex-col justify-center overflow-hidden">
       {/* Neumorphic Ambient Grids */}
@@ -24,25 +21,7 @@ function Hero() {
       <div className="hidden lg:block absolute right-16 top-1/2 w-14 h-14 rounded-2xl neu-convex border border-white/60 shadow-[6px_6px_16px_rgba(120,80,180,0.06),-6px_-6px_16px_#ffffff] rotate-12 pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center max-w-4xl mx-auto">
-          {/* Live Network Status Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="inline-flex items-center gap-3 px-5 py-2.5 rounded-full neu-convex text-xs font-bold text-slate-800 mb-8 border border-white/80 shadow-[4px_4px_10px_rgba(120,80,180,0.06),-4px_-4px_10px_#ffffff]">
-              <span className="flex h-2.5 w-2.5 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple-600" />
-              </span>
-              <span>Open Engineering Platform</span>
-              <span className="bg-slate-100 text-slate-900 px-2.5 py-0.5 rounded-full text-[11px] font-black border border-slate-200/80">
-                50+ Hubs Live
-              </span>
-            </div>
-          </motion.div>
-
+        <div className="text-center max-w-4xl mx-auto pt-8">
           {/* Unified Single-Color Headline with Custom Cursive Accent */}
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
@@ -92,72 +71,6 @@ function Hero() {
             >
               <span>Discover Our Products</span>
             </Link>
-          </motion.div>
-
-          {/* Clean 3D Neumorphic College Search Feature Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.32, ease: [0.16, 1, 0.3, 1] }}
-            className="neu-card p-5 sm:p-7 max-w-2xl mx-auto text-left border border-purple-300/40 shadow-[12px_12px_28px_rgba(147,51,234,0.14),-12px_-12px_28px_#ffffff]"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-11 h-11 sm:w-12 sm:h-12 neu-convex rounded-2xl flex items-center justify-center border border-purple-300/40 text-purple-700 font-black shrink-0 shadow-sm">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0v-4m0 4h4m-4-4l4 4" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-extrabold text-base sm:text-lg text-slate-950">Search College Engineering Hubs</h3>
-                <p className="text-text-muted text-xs font-normal">
-                  Find your college engineering hub or launch a new community for your campus.
-                </p>
-              </div>
-            </div>
-
-            {/* Mobile-Adaptive Search Form */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (searchQuery) {
-                  window.location.href = `/community?search=${encodeURIComponent(searchQuery)}`;
-                }
-              }}
-              className="flex flex-col sm:relative mb-4 sm:mb-5 gap-3 sm:gap-0"
-            >
-              <div className="relative flex-1">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="College name, e.g. IIT, NIT, MIT..."
-                  className="neu-input !pl-11 pr-4 sm:pr-40 py-3.5 sm:py-4 text-xs sm:text-sm rounded-xl w-full border border-purple-200/60 outline-none text-slate-900"
-                />
-              </div>
-              <button
-                type="submit"
-                className="py-3 sm:py-2.5 px-5 rounded-xl sm:rounded-lg bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:absolute sm:right-2 sm:top-1/2 sm:-translate-y-1/2 transition-all shadow-md w-full sm:w-auto text-center"
-              >
-                Find Hub →
-              </button>
-            </form>
-
-            {/* Quick College Filter Shortcuts */}
-            <div className="flex flex-wrap items-center gap-2 pt-2">
-              <span className="text-xs font-bold text-slate-600 mr-1">Popular:</span>
-              {['IIT Guwahati', 'NIT Trichy', 'BITS Pilani', 'VSSUT', 'Kiit University'].map((college) => (
-                <Link
-                  key={college}
-                  href={`/community?search=${encodeURIComponent(college)}`}
-                  className="neu-flat px-3 py-1.5 rounded-lg text-xs font-semibold text-purple-950 hover:bg-purple-100/80 border border-purple-200/60 transition-all"
-                >
-                  {college}
-                </Link>
-              ))}
-            </div>
           </motion.div>
         </div>
       </div>
