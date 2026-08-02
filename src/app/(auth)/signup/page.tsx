@@ -204,30 +204,32 @@ export default function SignUpPage() {
           <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest block border-b border-purple-200/40 pb-1">
             1. Account Details
           </span>
-          <div>
-            <label htmlFor="full_name" className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-              Full Name
-            </label>
-            <input 
-              id="full_name" 
-              name="full_name" 
-              required 
-              className="neu-input py-3.5 px-4 text-xs sm:text-sm text-slate-900 border border-purple-200/60" 
-              placeholder="e.g. Rahul Sharma" 
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-              Email Address
-            </label>
-            <input 
-              id="email" 
-              name="email" 
-              type="email" 
-              required 
-              className="neu-input py-3.5 px-4 text-xs sm:text-sm text-slate-900 border border-purple-200/60" 
-              placeholder="rahul@example.com" 
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="full_name" className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                Full Name
+              </label>
+              <input 
+                id="full_name" 
+                name="full_name" 
+                required 
+                className="neu-input py-3.5 px-4 text-xs sm:text-sm text-slate-900 border border-purple-200/60" 
+                placeholder="e.g. Rahul Sharma" 
+              />
+            </div>
+            <div>
+              <label htmlFor="email" className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                Email Address
+              </label>
+              <input 
+                id="email" 
+                name="email" 
+                type="email" 
+                required 
+                className="neu-input py-3.5 px-4 text-xs sm:text-sm text-slate-900 border border-purple-200/60" 
+                placeholder="rahul@example.com" 
+              />
+            </div>
           </div>
           <div>
             <label htmlFor="password" className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
@@ -263,45 +265,47 @@ export default function SignUpPage() {
 
           {!showAddCollege ? (
             <>
-              <div>
-                <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                  College District (Assam)
-                </label>
-                <select
-                  value={selectedDistrict}
-                  onChange={(e) => setSelectedDistrict(e.target.value)}
-                  required
-                  className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full font-medium"
-                >
-                  <option value="">Select District</option>
-                  {districts.map((d) => (
-                    <option key={d} value={d}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                    College District (Assam)
+                  </label>
+                  <select
+                    value={selectedDistrict}
+                    onChange={(e) => setSelectedDistrict(e.target.value)}
+                    required
+                    className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full font-medium"
+                  >
+                    <option value="">Select District</option>
+                    {districts.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-              <div>
-                <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                  Select College / University
-                </label>
-                <select
-                  value={selectedCollege}
-                  onChange={(e) => setSelectedCollege(e.target.value)}
-                  disabled={!selectedDistrict}
-                  required
-                  className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-                >
-                  <option value="">
-                    {!selectedDistrict ? 'Select district first' : 'Select College'}
-                  </option>
-                  {filteredColleges.map((c) => (
-                    <option key={c.id} value={c.name}>
-                      {c.name}
+                <div>
+                  <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                    Select College / University
+                  </label>
+                  <select
+                    value={selectedCollege}
+                    onChange={(e) => setSelectedCollege(e.target.value)}
+                    disabled={!selectedDistrict}
+                    required
+                    className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  >
+                    <option value="">
+                      {!selectedDistrict ? 'Select district first' : 'Select College'}
                     </option>
-                  ))}
-                </select>
+                    {filteredColleges.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <button
@@ -385,7 +389,7 @@ export default function SignUpPage() {
             3. Academic Information
           </span>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
                 Branch / Dept
@@ -422,9 +426,14 @@ export default function SignUpPage() {
         <button 
           type="submit" 
           disabled={loading} 
-          className="btn btn-primary w-full py-4 shadow-[4px_4px_14px_rgba(147,51,234,0.2),-4px_-4px_14px_#ffffff] hover:scale-[1.01]"
+          className="btn btn-primary w-full py-4 shadow-[4px_4px_14px_rgba(147,51,234,0.2),-4px_-4px_14px_#ffffff] hover:scale-[1.01] flex items-center justify-center gap-2 group"
         >
-          {loading ? 'Registering Account...' : 'Sign Up & Register Hub ⚡'}
+          <span>{loading ? 'Registering Account...' : 'Sign Up & Register Hub'}</span>
+          {!loading && (
+            <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          )}
         </button>
       </form>
 
