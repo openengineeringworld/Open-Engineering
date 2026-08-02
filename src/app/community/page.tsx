@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import FadeIn from '@/components/animations/FadeIn';
 import StaggerChildren, { StaggerItem } from '@/components/animations/StaggerChildren';
 import type { Metadata } from 'next';
+import CommunitiesList from './CommunitiesList';
 
 export const metadata: Metadata = {
   title: 'Community',
@@ -134,26 +135,7 @@ export default async function CommunityPage() {
           </FadeIn>
 
           {communities && communities.length > 0 ? (
-            <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {communities.map((community) => (
-                <StaggerItem key={community.id}>
-                  <div className="neu-card p-6 border border-purple-300/40 shadow-[6px_6px_16px_rgba(147,51,234,0.12),-6px_-6px_16px_#ffffff] flex flex-col justify-between group">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="w-14 h-14 neu-convex rounded-2xl flex items-center justify-center text-primary font-black text-xl border border-purple-300/40 shadow-[4px_4px_10px_rgba(147,51,234,0.18),-4px_-4px_10px_#ffffff]">
-                        {community.college?.name?.charAt(0) || 'C'}
-                      </div>
-                      <span className="badge badge-success text-xs font-bold shadow-sm">
-                        ● {community.member_count} Members
-                      </span>
-                    </div>
-                    <h3 className="font-extrabold text-lg mb-1 text-text group-hover:text-primary transition-colors">{community.name}</h3>
-                    <p className="text-text-muted text-xs font-normal">
-                      📍 {community.college?.city}, {community.college?.state}
-                    </p>
-                  </div>
-                </StaggerItem>
-              ))}
-            </StaggerChildren>
+            <CommunitiesList initialCommunities={communities} />
           ) : (
             <FadeIn className="text-center py-12">
               <div className="neu-card p-10 max-w-md mx-auto border border-purple-300/40 shadow-[8px_8px_20px_rgba(147,51,234,0.12),-8px_-8px_20px_#ffffff]">
