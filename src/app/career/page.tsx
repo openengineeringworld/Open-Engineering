@@ -9,7 +9,7 @@ const careerPaths = [
   {
     title: 'Open Positions & Jobs',
     desc: 'Full-time positions for software developers, UI/UX designers, and systems engineers wanting to build engineering solutions.',
-    href: '/career/jobs',
+    href: '/jobs',
     count: '3 Open Roles',
     badgeClass: 'badge-success',
     icon: (
@@ -24,12 +24,12 @@ const careerPaths = [
   {
     title: 'Internship Program',
     desc: 'Hands-on 2-3 month internships for students looking to gain production experience with Next.js, IoT, and AI platforms.',
-    href: '/career/internship',
+    href: '/internship',
     count: '2 Active Cohorts',
     badgeClass: 'badge-primary',
     icon: (
       <svg className="w-10 h-10 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 48 48" fill="none">
-        <path d="M24 6L42 16L24 26L6 16L24 6Z" className="fill-indigo-100 stroke-indigo-600" strokeWidth="2.5" strokeLinejoin="round" />
+        <path d="M24 6L42 16L24 26L6 16L24 6Z" className="fill-indigo-100 stroke-indigo-600" strokeWidth="2.5" />
         <path d="M12 20V32C12 32 18 38 24 38C30 38 36 32 36 32V20" className="stroke-indigo-600" strokeWidth="2.5" strokeLinecap="round" />
         <path d="M38 18.5V30" className="stroke-purple-600" strokeWidth="2.5" strokeLinecap="round" />
         <circle cx="38" cy="32" r="2.5" className="fill-purple-600" />
@@ -39,14 +39,14 @@ const careerPaths = [
   {
     title: 'Open Engineering Academy',
     desc: 'Structured learning bootcamps, workshops, and hands-on hardware & software masterclasses taught by engineers.',
-    href: '/career/academy',
+    href: '/academy',
     count: 'Launching Soon ⚡',
     badgeClass: 'badge-warning',
     icon: (
       <svg className="w-10 h-10 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 48 48" fill="none">
         <path d="M8 12C8 9.79086 9.79086 8 12 8H24V38H12C9.79086 38 8 36.2091 8 34V12Z" className="fill-purple-100 stroke-purple-600" strokeWidth="2.5" />
         <path d="M40 12C40 9.79086 38.2091 8 36 8H24V38H36C38.2091 38 40 36.2091 40 34V12Z" className="fill-purple-50 stroke-purple-600" strokeWidth="2.5" />
-        <line x1="24" y1="8" x2="24" y2="38" className="stroke-purple-700" strokeWidth="2.5" />
+        <line x1="24" y1="8" x2="24" y2="38" className="stroke-purple-700" width="2.5" />
       </svg>
     ),
   },

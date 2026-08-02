@@ -56,10 +56,10 @@ function Hero() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 sm:mb-14"
           >
             <Link
-              href="/community/join"
+              href="/career"
               className="w-full sm:w-auto py-4 px-8 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 shadow-[5px_5px_12px_rgba(0,0,0,0.25),-5px_-5px_12px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all group"
             >
-              <span>Explore College Hubs</span>
+              <span>Explore Careers</span>
               <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
@@ -445,9 +445,9 @@ function CareerPreview() {
               We offer jobs, internships, and academy programs.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/career/jobs" className="btn btn-outline btn-sm">Jobs</Link>
-              <Link href="/career/internship" className="btn btn-outline btn-sm">Internship</Link>
-              <Link href="/career/academy" className="btn btn-ghost btn-sm">Academy →</Link>
+              <Link href="/jobs" className="btn btn-outline btn-sm">Jobs</Link>
+              <Link href="/internship" className="btn btn-outline btn-sm">Internship</Link>
+              <Link href="/academy" className="btn btn-ghost btn-sm">Academy →</Link>
             </div>
           </FadeIn>
           <FadeIn direction="right">
@@ -458,7 +458,7 @@ function CareerPreview() {
                     <p className="font-bold text-text">{role}</p>
                     <p className="text-text-muted text-sm">{i === 2 ? 'Internship' : 'Full-time'} · Remote</p>
                   </div>
-                  <Link href="/career/jobs" className="btn btn-ghost btn-sm">
+                  <Link href="/jobs" className="btn btn-ghost btn-sm">
                     View →
                   </Link>
                 </div>

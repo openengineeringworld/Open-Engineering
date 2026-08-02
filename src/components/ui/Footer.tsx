@@ -12,9 +12,9 @@ const footerLinks = {
     { href: '/contact', label: 'Contact Us' },
   ],
   career: [
-    { href: '/career/jobs', label: 'Job Openings' },
-    { href: '/career/internship', label: 'Internships' },
-    { href: '/career/academy', label: 'Engineering Academy' },
+    { href: '/jobs', label: 'Job Openings' },
+    { href: '/internship', label: 'Internships' },
+    { href: '/academy', label: 'Engineering Academy' },
     { href: '/community', label: 'College Hubs' },
   ],
 };

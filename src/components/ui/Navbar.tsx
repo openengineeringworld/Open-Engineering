@@ -16,9 +16,9 @@ const navLinks = [
     href: '/career',
     label: 'Career',
     children: [
-      { href: '/career/jobs', label: 'Jobs' },
-      { href: '/career/internship', label: 'Internship' },
-      { href: '/career/academy', label: 'Academy' },
+      { href: '/jobs', label: 'Jobs' },
+      { href: '/internship', label: 'Internship' },
+      { href: '/academy', label: 'Academy' },
     ],
   },
   { href: '/community', label: 'Community' },
