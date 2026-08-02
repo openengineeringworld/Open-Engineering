@@ -21,10 +21,14 @@ export default function CommunitiesList({ initialCommunities }: { initialCommuni
   // Filter communities based on search query and selected district
   const filteredCommunities = useMemo(() => {
     return initialCommunities.filter((c) => {
+      const name = c.name || '';
+      const collegeName = c.college?.name || '';
+      const collegeCity = c.college?.city || '';
+
       const matchesSearch = 
-        c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.college?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        c.college?.city?.toLowerCase().includes(searchQuery.toLowerCase());
+        name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        collegeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        collegeCity.toLowerCase().includes(searchQuery.toLowerCase());
       
       const matchesDistrict = selectedDistrict ? c.college?.district === selectedDistrict : true;
 

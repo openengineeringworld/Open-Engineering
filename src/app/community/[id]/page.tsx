@@ -507,10 +507,14 @@ function MembersTab({ communityId }: { communityId: string }) {
     load();
   }, [communityId, supabase]);
 
-  const filtered = members.filter((m) =>
-    m.profile?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-    m.profile?.branch?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = members.filter((m) => {
+    const fullName = m.profile?.full_name || '';
+    const branch = m.profile?.branch || '';
+    return (
+      fullName.toLowerCase().includes(search.toLowerCase()) ||
+      branch.toLowerCase().includes(search.toLowerCase())
+    );
+  });
 
   return (
     <div className="space-y-4">

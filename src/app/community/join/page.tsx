@@ -138,12 +138,16 @@ export default function JoinCommunityPage() {
     }, 3000);
   }
 
-  const filtered = colleges.filter(
-    (c) =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.city.toLowerCase().includes(search.toLowerCase()) ||
-      c.state.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = colleges.filter((c) => {
+    const name = c.name || '';
+    const city = c.city || '';
+    const state = c.state || '';
+    return (
+      name.toLowerCase().includes(search.toLowerCase()) ||
+      city.toLowerCase().includes(search.toLowerCase()) ||
+      state.toLowerCase().includes(search.toLowerCase())
+    );
+  });
 
   return (
     <section className="section pt-36 pb-24">
