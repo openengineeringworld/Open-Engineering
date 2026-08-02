@@ -9,9 +9,9 @@ interface LogoProps {
 
 export default function Logo({ size = 'md', showText = true, className = '', href = '/' }: LogoProps) {
   const badgeSizes = {
-    sm: 'w-11 h-11 p-1.5 rounded-xl',
-    md: 'w-14 h-14 p-2 rounded-2xl',
-    lg: 'w-18 h-18 p-2.5 rounded-2xl',
+    sm: 'w-10 h-10 p-1.5 rounded-xl',
+    md: 'w-12 h-12 p-2 rounded-2xl',
+    lg: 'w-16 h-16 p-2.5 rounded-2xl',
   };
 
   const textSizes = {
