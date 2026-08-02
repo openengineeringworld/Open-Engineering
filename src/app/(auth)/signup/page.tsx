@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -10,6 +10,46 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const supabase = createClient();
+
+  // Onboarding & College Data States
+  const [colleges, setColleges] = useState<any[]>([]);
+  const [districts, setDistricts] = useState<string[]>([]);
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [filteredColleges, setFilteredColleges] = useState<any[]>([]);
+  const [selectedCollege, setSelectedCollege] = useState('');
+  const [showAddCollege, setShowAddCollege] = useState(false);
+
+  // Load districts and colleges on mount
+  useEffect(() => {
+    async function loadColleges() {
+      const { data: collegeData } = await supabase
+        .from('colleges')
+        .select('*')
+        .order('name');
+
+      if (collegeData) {
+        setColleges(collegeData);
+        // Extract unique districts
+        const uniqueDists = Array.from(
+          new Set(collegeData.map((c: any) => c.district).filter(Boolean))
+        ) as string[];
+        setDistricts(uniqueDists.sort());
+      }
+    }
+    loadColleges();
+  }, []);
+
+  // Filter colleges when district changes
+  useEffect(() => {
+    if (selectedDistrict) {
+      setFilteredColleges(colleges.filter((c) => c.district === selectedDistrict));
+      setSelectedCollege('');
+    } else {
+      setFilteredColleges([]);
+      setSelectedCollege('');
+    }
+  }, [selectedDistrict, colleges]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -17,13 +57,42 @@ export default function SignUpPage() {
     setError('');
 
     const formData = new FormData(e.currentTarget);
-    const fullName = formData.get('full_name') as string;
-    const email = formData.get('email') as string;
+    const fullName = (formData.get('full_name') as string).trim();
+    const email = (formData.get('email') as string).trim();
     const password = formData.get('password') as string;
+    const branch = (formData.get('branch') as string).trim();
+    const year = (formData.get('year') as string).trim();
 
-    const supabase = createClient();
+    let collegeName = '';
+    let city = '';
+    let state = 'Assam';
+    let district = '';
 
-    const { error: signUpError } = await supabase.auth.signUp({
+    if (showAddCollege) {
+      collegeName = (formData.get('college_name') as string).trim();
+      city = (formData.get('city') as string).trim();
+      state = (formData.get('state') as string).trim() || 'Assam';
+      district = (formData.get('district') as string).trim();
+    } else {
+      if (!selectedCollege) {
+        setError('Please select a college from the list.');
+        setLoading(false);
+        return;
+      }
+      const matched = colleges.find((c) => c.name === selectedCollege);
+      if (!matched) {
+        setError('Selected college is invalid.');
+        setLoading(false);
+        return;
+      }
+      collegeName = matched.name;
+      city = matched.city;
+      state = matched.state || 'Assam';
+      district = matched.district || '';
+    }
+
+    // 1. Sign up the user in Supabase Auth
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -37,66 +106,331 @@ export default function SignUpPage() {
       return;
     }
 
-    router.push('/onboarding');
-    router.refresh();
+    const userId = signUpData.user?.id;
+    if (!userId) {
+      setError('Registration succeeded but user profile could not be initialized.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // 2. Resolve College & Community
+      let targetCollegeId = '';
+      const { data: existingCollege } = await supabase
+        .from('colleges')
+        .select('*, community:communities(*)')
+        .ilike('name', collegeName)
+        .maybeSingle();
+
+      if (existingCollege) {
+        targetCollegeId = existingCollege.id;
+        const comm = Array.isArray(existingCollege.community) ? existingCollege.community[0] : existingCollege.community;
+        if (comm) {
+          // Add user to the existing community
+          await supabase
+            .from('community_members')
+            .insert({ user_id: userId, community_id: comm.id, role: 'member' });
+        }
+      } else {
+        // Create custom college (triggers trigger that inserts community)
+        const { data: newCollege, error: collegeError } = await supabase
+          .from('colleges')
+          .insert({ name: collegeName, city, state, district, added_by: userId })
+          .select()
+          .single();
+
+        if (collegeError) {
+          setError(collegeError.message);
+          setLoading(false);
+          return;
+        }
+
+        targetCollegeId = newCollege.id;
+
+        // Fetch auto-created community and update status = 'pending'
+        const { data: newCommunity } = await supabase
+          .from('communities')
+          .select('*')
+          .eq('college_id', newCollege.id)
+          .single();
+
+        if (newCommunity) {
+          await supabase
+            .from('communities')
+            .update({ status: 'pending' })
+            .eq('id', newCommunity.id);
+
+          await supabase
+            .from('community_members')
+            .insert({ user_id: userId, community_id: newCommunity.id, role: 'creator' });
+        }
+      }
+
+      // 3. Update profile with academic details, resolved college_id, and mark complete
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          college_id: targetCollegeId,
+          branch,
+          year,
+          city,
+          state,
+          is_profile_complete: true,
+        })
+        .eq('id', userId);
+
+      if (profileError) {
+        setError(profileError.message);
+        setLoading(false);
+        return;
+      }
+
+      router.push('/dashboard');
+      router.refresh();
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred during profile setup.');
+      setLoading(false);
+    }
   }
 
   return (
-    <div className="neu-card p-8">
-      <h1 className="text-2xl font-bold mb-2 text-center">Create Account</h1>
-      <p className="text-text-muted text-sm text-center mb-8">Join the engineering community</p>
+    <div className="neu-card p-8 sm:p-10 border border-purple-300/40 shadow-[10px_10px_24px_rgba(147,51,234,0.14),-10px_-10px_24px_#ffffff]">
+      <h1 className="text-2xl font-black mb-2 text-center text-slate-950">Create Account</h1>
+      <p className="text-text-muted text-sm text-center mb-8 font-medium">Join the engineering community & campus hub</p>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label htmlFor="full_name" className="block text-sm font-medium text-text-muted mb-2">Full Name</label>
-          <input id="full_name" name="full_name" required className="neu-input" placeholder="Your full name" />
-        </div>
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-text-muted mb-2">Email</label>
-          <input id="email" name="email" type="email" required className="neu-input" placeholder="you@example.com" />
-        </div>
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-text-muted mb-2">Password</label>
-          <div className="relative">
-            <input
-              id="password"
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              required
-              minLength={6}
-              className="neu-input !pr-12"
-              placeholder="Min 6 characters"
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Section 1: Account Information */}
+        <div className="space-y-4">
+          <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest block border-b border-purple-200/40 pb-1">
+            1. Account Details
+          </span>
+          <div>
+            <label htmlFor="full_name" className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+              Full Name
+            </label>
+            <input 
+              id="full_name" 
+              name="full_name" 
+              required 
+              className="neu-input py-3.5 px-4 text-xs sm:text-sm text-slate-900 border border-purple-200/60" 
+              placeholder="e.g. Rahul Sharma" 
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-purple-700 font-semibold text-xs transition-colors"
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-            >
-              {showPassword ? (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.025 10.025 0 014.122-.863c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m-5.875-1.002a3 3 0 11-4.243-4.243M3 3l18 18" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              )}
-            </button>
+          </div>
+          <div>
+            <label htmlFor="email" className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+              Email Address
+            </label>
+            <input 
+              id="email" 
+              name="email" 
+              type="email" 
+              required 
+              className="neu-input py-3.5 px-4 text-xs sm:text-sm text-slate-900 border border-purple-200/60" 
+              placeholder="rahul@example.com" 
+            />
+          </div>
+          <div>
+            <label htmlFor="password" className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={6}
+                className="neu-input py-3.5 px-4 !pr-12 text-xs sm:text-sm text-slate-900 border border-purple-200/60"
+                placeholder="Min 6 characters"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-purple-700 font-bold text-xs"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </div>
         </div>
 
-        {error && <p className="text-error text-sm text-center">{error}</p>}
+        {/* Section 2: Campus Registration */}
+        <div className="space-y-4 pt-2">
+          <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest block border-b border-purple-200/40 pb-1">
+            2. Campus & Location
+          </span>
 
-        <button type="submit" disabled={loading} className="btn btn-primary w-full">
-          {loading ? 'Creating Account...' : 'Sign Up'}
+          {!showAddCollege ? (
+            <>
+              <div>
+                <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                  College District (Assam)
+                </label>
+                <select
+                  value={selectedDistrict}
+                  onChange={(e) => setSelectedDistrict(e.target.value)}
+                  required
+                  className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full font-medium"
+                >
+                  <option value="">Select District</option>
+                  {districts.map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                  Select College / University
+                </label>
+                <select
+                  value={selectedCollege}
+                  onChange={(e) => setSelectedCollege(e.target.value)}
+                  disabled={!selectedDistrict}
+                  required
+                  className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                  <option value="">
+                    {!selectedDistrict ? 'Select district first' : 'Select College'}
+                  </option>
+                  {filteredColleges.map((c) => (
+                    <option key={c.id} value={c.name}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowAddCollege(true)}
+                className="text-purple-700 text-xs font-extrabold hover:underline"
+              >
+                Can&apos;t find your college? Register custom college →
+              </button>
+            </>
+          ) : (
+            <div className="space-y-4 p-4 rounded-2xl neu-pressed border border-purple-200/40">
+              <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest block mb-2">
+                Custom College Details
+              </span>
+              <div>
+                <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+                  College Full Name
+                </label>
+                <input
+                  name="college_name"
+                  required={showAddCollege}
+                  placeholder="e.g. Assam Engineering College"
+                  className="neu-input py-3 px-4 text-xs border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+                    City
+                  </label>
+                  <input
+                    name="city"
+                    required={showAddCollege}
+                    placeholder="e.g. Guwahati"
+                    className="neu-input py-3 px-4 text-xs border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+                    District
+                  </label>
+                  <input
+                    name="district"
+                    required={showAddCollege}
+                    placeholder="e.g. Kamrup"
+                    className="neu-input py-3 px-4 text-xs border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full font-medium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5">
+                  State
+                </label>
+                <input
+                  name="state"
+                  required={showAddCollege}
+                  defaultValue="Assam"
+                  placeholder="e.g. Assam"
+                  className="neu-input py-3 px-4 text-xs border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full font-medium"
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowAddCollege(false)}
+                className="text-purple-700 text-xs font-extrabold hover:underline"
+              >
+                ← Search existing colleges
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Section 3: Academic Details */}
+        <div className="space-y-4 pt-2">
+          <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest block border-b border-purple-200/40 pb-1">
+            3. Academic Information
+          </span>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                Branch / Dept
+              </label>
+              <input
+                name="branch"
+                required
+                placeholder="e.g. CSE, Civil..."
+                className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                Year of Study
+              </label>
+              <select
+                name="year"
+                required
+                className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] font-medium"
+              >
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+                <option value="Postgraduate">Postgraduate</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {error && <p className="text-error text-xs text-center font-extrabold">{error}</p>}
+
+        <button 
+          type="submit" 
+          disabled={loading} 
+          className="btn btn-primary w-full py-4 shadow-[4px_4px_14px_rgba(147,51,234,0.2),-4px_-4px_14px_#ffffff] hover:scale-[1.01]"
+        >
+          {loading ? 'Registering Account...' : 'Sign Up & Register Hub ⚡'}
         </button>
       </form>
 
-      <p className="text-text-muted text-sm text-center mt-6">
+      <p className="text-text-muted text-sm text-center mt-6 font-medium">
         Already have an account?{' '}
-        <Link href="/login" className="text-primary hover:underline font-medium">
+        <Link href="/login" className="text-primary hover:underline font-bold">
           Sign In
         </Link>
       </p>

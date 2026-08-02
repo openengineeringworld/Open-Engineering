@@ -50,6 +50,28 @@ export default async function DashboardPage() {
 
   const community = membership?.community as any;
 
+  if (community?.status === 'pending') {
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center py-12">
+        <div className="neu-card p-8 sm:p-10 max-w-xl text-center border border-purple-300/60 shadow-[12px_12px_28px_rgba(147,51,234,0.16),-12px_-12px_28px_#ffffff] space-y-6">
+          <div className="w-16 h-16 neu-convex rounded-2xl flex items-center justify-center text-amber-600 font-black text-3xl mx-auto border border-white/80 shadow-sm animate-pulse">
+            ⚡
+          </div>
+          <span className="badge badge-warning">● Pending Admin Verification</span>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-950">
+            Awaiting Admin Approval
+          </h2>
+          <p className="text-slate-700 text-sm font-medium leading-relaxed">
+            Your registration for the college hub <span className="font-extrabold text-purple-700">&ldquo;{community.college?.name}&rdquo;</span> is currently being reviewed by Open Engineering Admins.
+          </p>
+          <p className="text-text-muted text-xs font-normal">
+            Once approved, your college hub will go live and you will have full access to discussions, shared resources, events, and member channels.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Welcome Hero Banner */}
