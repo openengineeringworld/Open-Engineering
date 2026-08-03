@@ -773,7 +773,7 @@ function RequestsTab({ communityId }: { communityId: string }) {
     loadRequests();
   }, [loadRequests]);
 
-  async function handleApprove(requestId: string) {
+  async function handleApprove(requestId: string, memberUserId: string) {
     const { error } = await supabase
       .from('community_members')
       .update({ status: 'approved' })
@@ -781,9 +781,16 @@ function RequestsTab({ communityId }: { communityId: string }) {
 
     if (error) {
       alert(error.message);
-    } else {
-      loadRequests();
+      return;
     }
+
+    // Also approve student profile status
+    await supabase
+      .from('profiles')
+      .update({ status: 'approved' })
+      .eq('id', memberUserId);
+
+    loadRequests();
   }
 
   async function handleReject(requestId: string) {
@@ -826,7 +833,7 @@ function RequestsTab({ communityId }: { communityId: string }) {
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => handleApprove(req.id)}
+                  onClick={() => handleApprove(req.id, req.user_id)}
                   className="py-2 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
                   Approve

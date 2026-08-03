@@ -136,41 +136,29 @@ function SignUpForm() {
             .eq('college_id', existingCollege.id)
             .maybeSingle();
 
-          if (!existingComm) {
-            const { data: newComm, error: commError } = await supabase
-              .from('communities')
-              .insert({
-                college_id: existingCollege.id,
-                name: `${existingCollege.name} Chapter`,
-                description: 'Welcome to the campus chapter! Connect with fellow engineers.',
-                status: 'pending'
-              })
-              .select()
-              .single();
-
-            if (commError || !newComm) {
-              setError(commError?.message || 'Failed to create community chapter.');
-              setLoading(false);
-              return;
-            }
-            community = newComm;
-          } else {
-            community = existingComm;
-
-            // Check if community already has a creator
-            const { data: existingCreator } = await supabase
-              .from('community_members')
-              .select('id')
-              .eq('community_id', community.id)
-              .eq('role', 'creator')
-              .maybeSingle();
-
-            if (existingCreator) {
-              setError('This college community already has an active Campus Admin. Please select another college or join as a member.');
-              setLoading(false);
-              return;
-            }
+          if (existingComm) {
+            setError('A community chapter has already been launched for this college. Please join it as a member instead.');
+            setLoading(false);
+            return;
           }
+
+          const { data: newComm, error: commError } = await supabase
+            .from('communities')
+            .insert({
+              college_id: existingCollege.id,
+              name: `${existingCollege.name} Chapter`,
+              description: 'Welcome to the campus chapter! Connect with fellow engineers.',
+              status: 'pending'
+            })
+            .select()
+            .single();
+
+          if (commError || !newComm) {
+            setError(commError?.message || 'Failed to create community chapter.');
+            setLoading(false);
+            return;
+          }
+          community = newComm;
         } else {
           // Create custom college (triggers trigger that inserts community)
           const { data: newCollege, error: collegeError } = await supabase

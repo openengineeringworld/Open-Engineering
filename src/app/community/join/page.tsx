@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -8,34 +8,38 @@ import type { College, Community } from '@/types/database';
 
 export default function JoinCommunityPage() {
   const [colleges, setColleges] = useState<(College & { community?: Community })[]>([]);
-  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [joining, setJoining] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [userId, setUserId] = useState<string | null>(null);
+  
+  // Form states
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedCollegeId, setSelectedCollegeId] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
     async function init() {
+      // Check auth status
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/signup?redirect=/onboarding');
-        return;
-      }
-      setUserId(user.id);
+      if (user) {
+        setUserId(user.id);
+        
+        // If logged in, check if already in a community
+        const { data: membership } = await supabase
+          .from('community_members')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
 
-      // Check if already in a community
-      const { data: membership } = await supabase
-        .from('community_members')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (membership) {
-        router.push('/dashboard/my-community');
-        return;
+        if (membership) {
+          router.push('/dashboard/my-community');
+          return;
+        }
       }
 
       await loadColleges();
@@ -46,63 +50,164 @@ export default function JoinCommunityPage() {
 
   async function loadColleges() {
     setLoading(true);
+    // Fetch all colleges and their communities
     const { data } = await supabase
       .from('colleges')
       .select('*, community:communities(*)')
       .order('name');
 
     if (data) {
-      const mapped = data.map((c) => {
-        const comms = Array.isArray(c.community) ? c.community : (c.community ? [c.community] : []);
-        const approvedComm = comms.find((comm: any) => comm.status === 'approved');
-        return {
-          ...c,
-          community: approvedComm || null,
-        };
-      });
+      // Map and filter so we only store colleges that have APPROVED communities
+      const mapped = data
+        .map((c) => {
+          const comms = Array.isArray(c.community) ? c.community : (c.community ? [c.community] : []);
+          const approvedComm = comms.find((comm: any) => comm.status === 'approved');
+          return {
+            ...c,
+            community: approvedComm || null,
+          };
+        })
+        // Only keep colleges with approved communities
+        .filter((c) => c.community !== null);
+      
       setColleges(mapped as any);
     }
     setLoading(false);
   }
 
-  async function handleJoin(communityId: string) {
-    if (!userId) return;
-    setJoining(true);
+  // Extract unique districts from approved colleges
+  const districts = useMemo(() => {
+    const distSet = new Set<string>();
+    colleges.forEach((c) => {
+      const d = c.district;
+      if (d) distSet.add(d);
+    });
+    return Array.from(distSet).sort();
+  }, [colleges]);
+
+  // Filter colleges based on district
+  const filteredColleges = useMemo(() => {
+    if (!selectedDistrict) return [];
+    return colleges.filter((c) => c.district === selectedDistrict);
+  }, [colleges, selectedDistrict]);
+
+  // Find the selected college community details
+  const selectedCollege = useMemo(() => {
+    return colleges.find((c) => c.id === selectedCollegeId);
+  }, [colleges, selectedCollegeId]);
+
+  // Handle logged-in join request
+  async function handleLoggedInJoin() {
+    if (!userId || !selectedCollege?.community) return;
+    setSubmitting(true);
     setError('');
 
-    // Insert with status: 'pending' and role: 'member'
     const { error: joinError } = await supabase
       .from('community_members')
-      .insert({ 
-        user_id: userId, 
-        community_id: communityId,
+      .insert({
+        user_id: userId,
+        community_id: selectedCollege.community.id,
         role: 'member',
         status: 'pending'
       });
 
     if (joinError) {
       setError(joinError.message);
-      setJoining(false);
+      setSubmitting(false);
       return;
     }
 
+    // Update user profile college_id
+    await supabase
+      .from('profiles')
+      .update({ college_id: selectedCollege.id, is_profile_complete: true })
+      .eq('id', userId);
+
     setSuccess('Join request submitted! Awaiting approval from the Campus Admin.');
     setTimeout(() => {
-      router.push('/dashboard/my-community');
+      router.push('/dashboard');
       router.refresh();
     }, 2500);
   }
 
-  const filtered = colleges.filter((c) => {
-    const name = c.name || '';
-    const city = c.city || '';
-    const state = c.state || '';
-    return (
-      name.toLowerCase().includes(search.toLowerCase()) ||
-      city.toLowerCase().includes(search.toLowerCase()) ||
-      state.toLowerCase().includes(search.toLowerCase())
-    );
-  });
+  // Handle signup & join request for non-logged in users
+  async function handleSignUpAndJoin(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!selectedCollege?.community) return;
+    setSubmitting(true);
+    setError('');
+
+    const formData = new FormData(e.currentTarget);
+    const fullName = (formData.get('full_name') as string).trim();
+    const email = (formData.get('email') as string).trim();
+    const password = formData.get('password') as string;
+    const branch = (formData.get('branch') as string).trim();
+    const year = (formData.get('year') as string).trim();
+
+    // 1. Sign up user
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName }
+      }
+    });
+
+    if (signUpError) {
+      setError(signUpError.message);
+      setSubmitting(false);
+      return;
+    }
+
+    const newUserId = signUpData.user?.id;
+    if (!newUserId) {
+      setError('Registration succeeded but user profile could not be initialized.');
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      // 2. Insert community membership (pending approval)
+      const { error: joinError } = await supabase
+        .from('community_members')
+        .insert({
+          user_id: newUserId,
+          community_id: selectedCollege.community.id,
+          role: 'member',
+          status: 'pending'
+        });
+
+      if (joinError) {
+        throw new Error(joinError.message);
+      }
+
+      // 3. Update profiles table with academic info & mark complete
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          college_id: selectedCollege.id,
+          branch,
+          year,
+          city: selectedCollege.city,
+          state: selectedCollege.state || 'Assam',
+          is_profile_complete: true
+        })
+        .eq('id', newUserId);
+
+      if (profileError) {
+        throw new Error(profileError.message);
+      }
+
+      setSuccess('Account created and join request submitted! Awaiting approval from the Campus Admin.');
+      setTimeout(() => {
+        router.push('/dashboard');
+        router.refresh();
+      }, 3000);
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred during setup.');
+      setSubmitting(false);
+    }
+  }
 
   return (
     <section className="section pt-36 pb-24">
@@ -115,27 +220,24 @@ export default function JoinCommunityPage() {
             ← Back to Communities
           </Link>
           <br />
-          <span className="badge badge-primary mb-3">Community Chapters</span>
+          <span className="badge badge-primary mb-3">Campus Chapter</span>
           <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
-            Join Your College <span className="gradient-text">Community</span>
+            Join College <span className="gradient-text">Community</span>
           </h1>
           <p className="text-text-muted text-sm font-normal">
-            Search for your college community below and request access.
+            Select your college and request access to join the student engineering chapter.
           </p>
         </div>
 
         {success && (
           <div className="neu-card p-6 text-center mb-8 border border-purple-300/60 shadow-[8px_8px_20px_rgba(147,51,234,0.14),-8px_-8px_20px_#ffffff]">
-            <div className="w-14 h-14 neu-convex rounded-2xl flex items-center justify-center text-purple-700 mx-auto mb-3 border border-white/80 shadow-sm">
+            <div className="w-14 h-14 neu-convex rounded-2xl flex items-center justify-center text-purple-700 mx-auto mb-3 border border-white/80 shadow-sm animate-bounce">
               ⏳
             </div>
             <h3 className="text-xl font-extrabold text-slate-950 mb-2">Request Submitted!</h3>
             <p className="text-slate-700 text-xs sm:text-sm font-medium leading-relaxed max-w-md mx-auto">
               {success}
             </p>
-            <div className="mt-4 pt-4 border-t border-purple-200/40">
-              <span className="badge badge-warning text-xs">● Status: Pending Admin Approval</span>
-            </div>
           </div>
         )}
 
@@ -145,83 +247,188 @@ export default function JoinCommunityPage() {
           </div>
         )}
 
-        {/* Search Input with Vector SVG */}
-        <div className="relative mb-6">
-          <svg className="w-5 h-5 text-purple-600 absolute left-4 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="neu-input !pl-12 pr-5 py-4 rounded-xl text-sm w-full outline-none text-slate-800 border border-purple-200/60"
-            placeholder="Search for your college name, city, or state..."
-          />
-        </div>
+        {!success && (
+          <div className="space-y-6 neu-card p-6 sm:p-8 border border-purple-300/40 shadow-[8px_8px_20px_rgba(147,51,234,0.12),-8px_-8px_20px_#ffffff]">
+            <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest block border-b border-purple-200/40 pb-1 mb-4">
+              1. Choose Campus
+            </span>
 
-        {/* College list */}
-        {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="skeleton h-20 rounded-2xl" />
-            ))}
-          </div>
-        ) : (
-          <>
-            <div className="space-y-3 mb-8">
-              {filtered.length > 0 ? (
-                filtered.map((college) => (
-                  <div key={college.id} className="neu-card p-5 flex items-center justify-between border border-purple-300/40 shadow-[4px_4px_12px_rgba(147,51,234,0.1),-4px_-4px_12px_#ffffff]">
-                    <div>
-                      <h3 className="font-extrabold text-slate-900 text-sm">{college.name}</h3>
-                      <p className="text-text-muted text-xs font-normal mt-0.5">
-                        📍 {college.city}, {college.state}
-                        {college.community && (
-                          <span className="text-purple-700 font-bold"> · {college.community.member_count} Members</span>
-                        )}
-                      </p>
-                    </div>
-                    {college.community ? (
-                      <button
-                        onClick={() => handleJoin(college.community!.id)}
-                        disabled={joining}
-                        className="py-2.5 px-5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs shadow-[3px_3px_10px_rgba(0,0,0,0.3),-3px_-3px_10px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all shrink-0"
-                      >
-                        {joining ? '...' : 'Request to Join'}
-                      </button>
-                    ) : (
-                      <Link
-                        href={`/community/create?collegeId=${college.id}&district=${encodeURIComponent(college.district || '')}`}
-                        className="py-2.5 px-4 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 font-extrabold text-[11px] hover:scale-[1.02] active:scale-[0.98] transition-all text-center shrink-0"
-                      >
-                        Launch Chapter ⚡
-                      </Link>
-                    )}
-                  </div>
-                ))
-              ) : search ? (
-                <div className="text-center py-8 text-text-muted">
-                  <p className="mb-2 text-sm font-normal">No college found for &ldquo;{search}&rdquo;</p>
-                  <Link
-                    href="/community/create"
-                    className="text-primary font-bold hover:underline text-xs"
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                  College District (Assam)
+                </label>
+                {loading ? (
+                  <div className="skeleton h-11 rounded-xl" />
+                ) : (
+                  <select
+                    value={selectedDistrict}
+                    onChange={(e) => {
+                      setSelectedDistrict(e.target.value);
+                      setSelectedCollegeId('');
+                    }}
+                    required
+                    className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full font-medium"
                   >
-                    Launch a new campus chapter here →
-                  </Link>
-                </div>
-              ) : null}
+                    <option value="">Select District</option>
+                    {districts.map((d) => (
+                      <option key={d} value={d}>
+                        {d}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                  Select College / University
+                </label>
+                <select
+                  value={selectedCollegeId}
+                  onChange={(e) => setSelectedCollegeId(e.target.value)}
+                  disabled={!selectedDistrict || loading}
+                  required
+                  className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                >
+                  <option value="">
+                    {!selectedDistrict ? 'Select district first' : 'Select College'}
+                  </option>
+                  {filteredColleges.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
-            {/* Link to Create Community */}
-            <div className="text-center mb-4">
-              <Link
-                href="/community/create"
-                className="text-xs font-bold text-purple-800 hover:text-purple-950 transition-colors underline"
-              >
-                Can't find your college? Click here to launch a new chapter →
-              </Link>
-            </div>
-          </>
+            {selectedCollege && (
+              <div className="mt-2 text-xs font-semibold text-purple-700 bg-purple-50 p-3.5 rounded-xl border border-purple-200/50">
+                🚀 Selected chapter has <strong>{selectedCollege.community?.member_count || 0}</strong> active member(s).
+              </div>
+            )}
+
+            {/* Form for logged in users */}
+            {userId && selectedCollegeId && (
+              <div className="pt-6 border-t border-purple-200/30">
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={handleLoggedInJoin}
+                  className="w-full btn btn-primary py-4 shadow-[4px_4px_14px_rgba(147,51,234,0.2),-4px_-4px_14px_#ffffff] hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                >
+                  <span>{submitting ? 'Submitting Request...' : 'Submit Join Request'}</span>
+                </button>
+              </div>
+            )}
+
+            {/* Form for non-logged in users (Signup & Join) */}
+            {!userId && selectedCollegeId && (
+              <form onSubmit={handleSignUpAndJoin} className="space-y-6 pt-4 border-t border-purple-200/30 animate-fade-in">
+                <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest block border-b border-purple-200/40 pb-1">
+                  2. Personal & Academic Details
+                </span>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="full_name" className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                      Full Name
+                    </label>
+                    <input 
+                      id="full_name" 
+                      name="full_name" 
+                      required 
+                      className="neu-input py-3.5 px-4 text-xs sm:text-sm text-slate-900 border border-purple-200/60" 
+                      placeholder="e.g. Rahul Sharma" 
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                      Email Address
+                    </label>
+                    <input 
+                      id="email" 
+                      name="email" 
+                      type="email" 
+                      required 
+                      className="neu-input py-3.5 px-4 text-xs sm:text-sm text-slate-900 border border-purple-200/60" 
+                      placeholder="rahul@example.com" 
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="password" className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      className="neu-input py-3.5 px-4 !pr-12 text-xs sm:text-sm text-slate-900 border border-purple-200/60"
+                      placeholder="Min 6 characters"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-purple-700 font-bold text-xs"
+                    >
+                      {showPassword ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                      Branch / Dept
+                    </label>
+                    <input
+                      name="branch"
+                      required
+                      placeholder="e.g. CSE, Mechanical..."
+                      className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
+                      Year of Study
+                    </label>
+                    <select
+                      name="year"
+                      required
+                      className="neu-input py-3.5 px-4 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] font-medium"
+                    >
+                      <option value="1st Year">1st Year</option>
+                      <option value="2nd Year">2nd Year</option>
+                      <option value="3rd Year">3rd Year</option>
+                      <option value="4th Year">4th Year</option>
+                      <option value="Postgraduate">Postgraduate</option>
+                    </select>
+                  </div>
+                </div>
+
+                <button 
+                  type="submit" 
+                  disabled={submitting} 
+                  className="btn btn-primary w-full py-4 shadow-[4px_4px_14px_rgba(147,51,234,0.2),-4px_-4px_14px_#ffffff] hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2"
+                >
+                  <span>{submitting ? 'Registering & Submitting Request...' : 'Sign Up & Request to Join'}</span>
+                </button>
+              </form>
+            )}
+
+            {!selectedCollegeId && (
+              <div className="text-center py-6 text-slate-500 text-xs font-semibold bg-slate-50 border border-slate-200/40 rounded-2xl">
+                District selection will filter available college chapters.
+              </div>
+            )}
+          </div>
         )}
       </div>
     </section>

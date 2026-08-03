@@ -162,27 +162,27 @@ function CreateCommunityForm() {
           .eq('college_id', collegeId)
           .maybeSingle();
 
-        if (!existingComm) {
-          const selectedCol = colleges.find((c) => c.id === collegeId);
-          const colName = selectedCol ? selectedCol.name : 'College';
-          const { data: newComm, error: commError } = await supabase
-            .from('communities')
-            .insert({
-              college_id: collegeId,
-              name: communityName.trim() || `${colName} Chapter`,
-              description: description.trim() || 'Welcome to the campus chapter! Connect with fellow engineers.',
-              status: 'pending'
-            })
-            .select()
-            .single();
-
-          if (commError || !newComm) {
-            throw new Error(commError?.message || 'Failed to create community chapter.');
-          }
-          community = newComm;
-        } else {
-          community = existingComm;
+        if (existingComm) {
+          throw new Error('A community chapter has already been launched for this college. Please go to the Join Community page to request access instead.');
         }
+
+        const selectedCol = colleges.find((c) => c.id === collegeId);
+        const colName = selectedCol ? selectedCol.name : 'College';
+        const { data: newComm, error: commError } = await supabase
+          .from('communities')
+          .insert({
+            college_id: collegeId,
+            name: communityName.trim() || `${colName} Chapter`,
+            description: description.trim() || 'Welcome to the campus chapter! Connect with fellow engineers.',
+            status: 'pending'
+          })
+          .select()
+          .single();
+
+        if (commError || !newComm) {
+          throw new Error(commError?.message || 'Failed to create community chapter.');
+        }
+        community = newComm;
       }
 
       if (!community) {
