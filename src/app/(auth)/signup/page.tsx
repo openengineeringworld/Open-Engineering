@@ -124,47 +124,95 @@ function SignUpForm() {
         .ilike('name', collegeName)
         .maybeSingle();
 
-      if (existingCollege) {
-        targetCollegeId = existingCollege.id;
-        const comm = Array.isArray(existingCollege.community) ? existingCollege.community[0] : existingCollege.community;
-        if (comm) {
-          // Add user to the existing community
+      if (isAdminFlow) {
+        let community: any = null;
+
+        if (existingCollege) {
+          targetCollegeId = existingCollege.id;
+          community = Array.isArray(existingCollege.community) ? existingCollege.community[0] : existingCollege.community;
+          
+          if (!community) {
+            setError('Community chapter could not be resolved.');
+            setLoading(false);
+            return;
+          }
+
+          // Check if community already has a creator
+          const { data: existingCreator } = await supabase
+            .from('community_members')
+            .select('id')
+            .eq('community_id', community.id)
+            .eq('role', 'creator')
+            .maybeSingle();
+
+          if (existingCreator) {
+            setError('This college community already has an active Campus Admin. Please select another college or join as a member.');
+            setLoading(false);
+            return;
+          }
+        } else {
+          // Create custom college (triggers trigger that inserts community)
+          const { data: newCollege, error: collegeError } = await supabase
+            .from('colleges')
+            .insert({ name: collegeName, city, state, district, added_by: userId })
+            .select()
+            .single();
+
+          if (collegeError) {
+            setError(collegeError.message);
+            setLoading(false);
+            return;
+          }
+
+          targetCollegeId = newCollege.id;
+
+          // Fetch auto-created community
+          const { data: newCommunity } = await supabase
+            .from('communities')
+            .select('*')
+            .eq('college_id', newCollege.id)
+            .single();
+
+          community = newCommunity;
+        }
+
+        if (community) {
+          // Update community to pending approval
+          await supabase
+            .from('communities')
+            .update({ status: 'pending' })
+            .eq('id', community.id);
+
+          // Join as creator (approved status)
           await supabase
             .from('community_members')
-            .insert({ user_id: userId, community_id: comm.id, role: 'member' });
+            .insert({
+              user_id: userId,
+              community_id: community.id,
+              role: 'creator',
+              status: 'approved',
+            });
         }
       } else {
-        // Create custom college (triggers trigger that inserts community)
-        const { data: newCollege, error: collegeError } = await supabase
-          .from('colleges')
-          .insert({ name: collegeName, city, state, district, added_by: userId })
-          .select()
-          .single();
-
-        if (collegeError) {
-          setError(collegeError.message);
+        // Normal student joining existing college
+        if (!existingCollege) {
+          setError('Selected college was not found.');
           setLoading(false);
           return;
         }
 
-        targetCollegeId = newCollege.id;
-
-        // Fetch auto-created community and update status = 'pending'
-        const { data: newCommunity } = await supabase
-          .from('communities')
-          .select('*')
-          .eq('college_id', newCollege.id)
-          .single();
-
-        if (newCommunity) {
-          await supabase
-            .from('communities')
-            .update({ status: 'pending' })
-            .eq('id', newCommunity.id);
-
+        targetCollegeId = existingCollege.id;
+        const comm = Array.isArray(existingCollege.community) ? existingCollege.community[0] : existingCollege.community;
+        
+        if (comm) {
           await supabase
             .from('community_members')
-            .insert({ user_id: userId, community_id: newCommunity.id, role: 'creator', status: 'approved' });
+            .insert({
+              user_id: userId,
+              community_id: comm.id,
+              role: 'member',
+              status: 'pending'
+            });
         }
       }
 
