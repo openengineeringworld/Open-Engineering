@@ -3,7 +3,6 @@ import { createClient } from '@/lib/supabase/server';
 import FadeIn from '@/components/animations/FadeIn';
 import StaggerChildren, { StaggerItem } from '@/components/animations/StaggerChildren';
 import type { Metadata } from 'next';
-import CommunitiesList from './CommunitiesList';
 
 export const metadata: Metadata = {
   title: 'Community',
@@ -59,14 +58,6 @@ const communityFeatures = [
 ];
 
 export default async function CommunityPage() {
-  const supabase = await createClient();
-
-  const { data: communities } = await supabase
-    .from('communities')
-    .select('*, college:colleges(*)')
-    .or('status.eq.approved,status.is.null')
-    .order('member_count', { ascending: false });
-
   return (
     <>
       {/* Hero */}
@@ -82,7 +73,7 @@ export default async function CommunityPage() {
               share resources, discuss ideas, and collaborate on real-world projects.
             </p>
             <Link
-              href="/onboarding"
+              href="/community/join"
               className="py-4 px-8 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] hover:shadow-[6px_6px_18px_rgba(0,0,0,0.5),-6px_-6px_18px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all group/btn"
             >
               <span>Join Your College Community</span>
@@ -119,44 +110,70 @@ export default async function CommunityPage() {
         </div>
       </section>
 
-      {/* Active Communities List */}
+      {/* Choose Your Path */}
       <section className="section-sm pb-24">
         <div className="container mx-auto px-6">
           <FadeIn className="text-center mb-12">
-            <span className="badge badge-primary mb-3">Live Communities</span>
+            <span className="badge badge-primary mb-3">Get Started</span>
             <h2 className="text-3xl font-extrabold mb-3">
-              Active <span className="gradient-text">College / Communities</span>
+              Choose Your <span className="gradient-text">Path</span>
             </h2>
-            <p className="text-text-muted text-sm font-normal">
-              {communities && communities.length > 0
-                ? `${communities.length} college / communities actively building together`
-                : 'Be the first to pioneer a community for your college!'}
+            <p className="text-text-muted text-sm font-normal max-w-xl mx-auto">
+              Whether you want to join an existing campus hub or launch a brand new community for your college — we have you covered.
             </p>
           </FadeIn>
 
-          {communities && communities.length > 0 ? (
-            <CommunitiesList initialCommunities={communities} />
-          ) : (
-            <FadeIn className="text-center py-12">
-              <div className="neu-card p-10 max-w-md mx-auto border border-purple-300/40 shadow-[8px_8px_20px_rgba(147,51,234,0.12),-8px_-8px_20px_#ffffff]">
-                <div className="w-16 h-16 neu-convex rounded-2xl p-3 flex items-center justify-center border border-purple-300/40 mx-auto mb-5 shadow-sm">
-                  <svg className="w-8 h-8 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0v-4m0 4h4m-4-4l4 4" />
-                  </svg>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Join Community Path */}
+            <FadeIn>
+              <div className="neu-card p-8 h-full flex flex-col justify-between border border-purple-300/40 shadow-[8px_8px_20px_rgba(147,51,234,0.12),-8px_-8px_20px_#ffffff] hover:shadow-[12px_12px_24px_rgba(147,51,234,0.22),-12px_-12px_24px_#ffffff] transition-all duration-300">
+                <div className="space-y-4">
+                  <div className="w-16 h-16 neu-convex rounded-2xl p-4 flex items-center justify-center border border-purple-300/40 shadow-sm text-purple-600">
+                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-extrabold text-slate-950">Join Campus Hub</h3>
+                  <p className="text-text-muted text-sm leading-relaxed font-normal">
+                    Search for your college and request to join the community. Connect with peer student engineers, share learning resources, and participate in discussions.
+                  </p>
                 </div>
-                <h3 className="text-lg font-extrabold mb-2 text-text">No communities registered yet</h3>
-                <p className="text-text-muted text-xs leading-relaxed mb-6 font-normal">
-                  Be the campus pioneer! Add your engineering college and launch the first hub.
-                </p>
-                <Link
-                  href="/community/join"
-                  className="w-full py-3 px-5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs inline-flex items-center justify-center gap-2 shadow-[4px_4px_12px_rgba(0,0,0,0.35),-4px_-4px_12px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all"
-                >
-                  Create First Community Hub →
-                </Link>
+                <div className="mt-8 pt-4 border-t border-purple-200/40">
+                  <Link
+                    href="/community/join"
+                    className="w-full py-3.5 px-5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  >
+                    Search & Join Community →
+                  </Link>
+                </div>
               </div>
             </FadeIn>
-          )}
+
+            {/* Create Community Path */}
+            <FadeIn>
+              <div className="neu-card p-8 h-full flex flex-col justify-between border border-purple-300/40 shadow-[8px_8px_20px_rgba(147,51,234,0.12),-8px_-8px_20px_#ffffff] hover:shadow-[12px_12px_24px_rgba(147,51,234,0.22),-12px_-12px_24px_#ffffff] transition-all duration-300">
+                <div className="space-y-4">
+                  <div className="w-16 h-16 neu-convex rounded-2xl p-4 flex items-center justify-center border border-purple-300/40 shadow-sm text-indigo-600">
+                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-extrabold text-slate-950">Launch Campus Hub</h3>
+                  <p className="text-text-muted text-sm leading-relaxed font-normal">
+                    Cannot find your college community? Register your college, launch a new hub, and become the campus admin to lead engineering projects in your college.
+                  </p>
+                </div>
+                <div className="mt-8 pt-4 border-t border-purple-200/40">
+                  <Link
+                    href="/community/create"
+                    className="w-full py-3.5 px-5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  >
+                    Launch New Hub ⚡
+                  </Link>
+                </div>
+              </div>
+            </FadeIn>
+          </div>
         </div>
       </section>
     </>

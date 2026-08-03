@@ -41,9 +41,11 @@ export type CommunityMember = {
   id: string;
   user_id: string;
   community_id: string;
-  role: 'member' | 'creator';
+  role: 'member' | 'creator' | 'admin';
+  status: 'pending' | 'approved' | 'rejected';
   joined_at: string;
   profile?: Profile;
+  community?: Community;
 };
 
 export type Post = {

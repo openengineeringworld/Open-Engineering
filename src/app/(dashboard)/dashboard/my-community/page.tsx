@@ -44,8 +44,49 @@ export default function MyCommunityPage() {
   if (loading) return <div className="flex justify-center py-20"><div className="loading-spinner" /></div>;
   if (!community || !membership || !userId) return null;
 
+  // Handle pending join request screen
+  if (membership.status === 'pending') {
+    return (
+      <div className="min-h-[70vh] flex items-center justify-center py-12">
+        <div className="neu-card p-8 sm:p-10 max-w-xl text-center border border-purple-300/60 shadow-[12px_12px_28px_rgba(147,51,234,0.16),-12px_-12px_28px_#ffffff] space-y-6">
+          <div className="w-16 h-16 neu-convex rounded-2xl flex items-center justify-center text-purple-700 font-black text-3xl mx-auto border border-white/80 shadow-sm animate-pulse">
+            ⏳
+          </div>
+          <span className="badge badge-warning">● Pending Campus Approval</span>
+          <h2 className="text-2xl sm:text-3xl font-black text-slate-950">
+            Awaiting Approval
+          </h2>
+          <p className="text-slate-700 text-sm font-medium leading-relaxed">
+            Your request to join the college hub <span className="font-extrabold text-purple-700">&ldquo;{community.name}&rdquo;</span> has been sent to the Campus Admin for approval.
+          </p>
+          <p className="text-text-muted text-xs font-normal">
+            Once the Campus Admin approves your request, you will immediately unlock access to the discussion feed, announcements, resources, and events.
+          </p>
+          <div className="pt-4 border-t border-purple-200/40">
+            <button
+              onClick={async () => {
+                if (confirm('Are you sure you want to cancel your join request?')) {
+                  await supabase.from('community_members').delete().eq('id', membership.id);
+                  router.push('/community/join');
+                  router.refresh();
+                }
+              }}
+              className="py-3 px-6 rounded-xl border border-rose-200 text-rose-700 font-bold text-xs hover:text-rose-950 hover:bg-rose-50/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            >
+              Cancel Join Request
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const isCreator = membership.role === 'creator';
+  const isAdmin = membership.role === 'creator' || membership.role === 'admin';
   const tabs = ['feed', 'announcements', 'members', 'resources', 'events'];
+  if (isAdmin) {
+    tabs.push('requests');
+  }
 
   return (
     <div>
@@ -56,14 +97,16 @@ export default function MyCommunityPage() {
             <h1 className="text-xl font-bold">{community.name}</h1>
             <p className="text-text-muted text-sm">{community.description}</p>
             <p className="text-text-dim text-xs mt-1">
-              {community.member_count} members · {isCreator ? 'Creator' : 'Member'}
+              {community.member_count} members · {membership.role === 'creator' ? 'Creator' : membership.role === 'admin' ? 'Admin' : 'Member'}
             </p>
           </div>
           <button
             onClick={async () => {
-              await supabase.from('community_members').delete().eq('id', membership.id);
-              router.push('/community/join');
-              router.refresh();
+              if (confirm('Are you sure you want to leave the community?')) {
+                await supabase.from('community_members').delete().eq('id', membership.id);
+                router.push('/community/join');
+                router.refresh();
+              }
             }}
             className="btn btn-ghost btn-sm text-error"
           >
@@ -87,10 +130,11 @@ export default function MyCommunityPage() {
 
       {/* Tab Content */}
       {activeTab === 'feed' && <FeedTab communityId={community.id} userId={userId} />}
-      {activeTab === 'announcements' && <AnnouncementsTab communityId={community.id} userId={userId} isCreator={isCreator} />}
-      {activeTab === 'members' && <MembersTab communityId={community.id} />}
+      {activeTab === 'announcements' && <AnnouncementsTab communityId={community.id} userId={userId} isCreator={isAdmin} />}
+      {activeTab === 'members' && <MembersTab communityId={community.id} currentMembership={membership} />}
       {activeTab === 'resources' && <ResourcesTab communityId={community.id} userId={userId} />}
-      {activeTab === 'events' && <EventsTab communityId={community.id} userId={userId} isCreator={isCreator} />}
+      {activeTab === 'events' && <EventsTab communityId={community.id} userId={userId} isCreator={isAdmin} />}
+      {activeTab === 'requests' && <RequestsTab communityId={community.id} />}
     </div>
   );
 }
@@ -381,27 +425,42 @@ function AnnouncementsTab({ communityId, userId, isCreator }: { communityId: str
 // ========================================
 // MEMBERS TAB
 // ========================================
-function MembersTab({ communityId }: { communityId: string }) {
+function MembersTab({ communityId, currentMembership }: { communityId: string; currentMembership: CommunityMember }) {
   const [members, setMembers] = useState<(CommunityMember & { profile?: Profile })[]>([]);
   const [search, setSearch] = useState('');
   const supabase = createClient();
 
-  useEffect(() => {
-    async function load() {
-      const { data } = await supabase
-        .from('community_members')
-        .select('*, profile:profiles(full_name, profile_image, branch, year, status)')
-        .eq('community_id', communityId)
-        .order('joined_at');
+  const load = useCallback(async () => {
+    const { data } = await supabase
+      .from('community_members')
+      .select('*, profile:profiles(full_name, profile_image, branch, year, status)')
+      .eq('community_id', communityId)
+      .eq('status', 'approved')
+      .order('joined_at');
 
-      if (data) {
-        const mapped = data.map((m) => ({ ...m, profile: Array.isArray(m.profile) ? m.profile[0] : m.profile }));
-        setMembers(mapped.filter((m) => m.profile?.status === 'approved'));
-      }
+    if (data) {
+      const mapped = data.map((m) => ({ ...m, profile: Array.isArray(m.profile) ? m.profile[0] : m.profile }));
+      setMembers(mapped.filter((m) => m.profile?.status === 'approved'));
     }
+  }, [communityId, supabase]);
+
+  useEffect(() => {
     load();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [communityId]);
+  }, [load]);
+
+  async function handleToggleAdmin(memberId: string, currentRole: string) {
+    const newRole = currentRole === 'admin' ? 'member' : 'admin';
+    const { error } = await supabase
+      .from('community_members')
+      .update({ role: newRole })
+      .eq('id', memberId);
+
+    if (error) {
+      alert(error.message);
+    } else {
+      load();
+    }
+  }
 
   const filtered = members.filter((m) => {
     const fullName = m.profile?.full_name || '';
@@ -411,6 +470,8 @@ function MembersTab({ communityId }: { communityId: string }) {
       branch.toLowerCase().includes(search.toLowerCase())
     );
   });
+
+  const isCreator = currentMembership.role === 'creator';
 
   return (
     <div className="space-y-4">
@@ -439,7 +500,25 @@ function MembersTab({ communityId }: { communityId: string }) {
                 {member.profile?.branch} {member.profile?.year && `· ${member.profile.year}`}
               </p>
             </div>
-            {member.role === 'creator' && <span className="badge badge-primary text-xs">Creator</span>}
+            
+            {/* Roles and Actions */}
+            <div className="flex items-center gap-2">
+              {member.role === 'creator' && <span className="badge badge-primary text-xs">Creator</span>}
+              {member.role === 'admin' && <span className="badge badge-success text-xs">Admin</span>}
+              
+              {isCreator && member.role !== 'creator' && (
+                <button
+                  onClick={() => handleToggleAdmin(member.id, member.role)}
+                  className={`py-1 px-2.5 rounded-lg font-bold text-[10px] shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all ${
+                    member.role === 'admin'
+                      ? 'bg-rose-100 text-rose-700 hover:bg-rose-200'
+                      : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
+                  }`}
+                >
+                  {member.role === 'admin' ? 'Remove Admin' : 'Make Admin'}
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
@@ -662,6 +741,106 @@ function EventsTab({ communityId, userId, isCreator }: { communityId: string; us
             </div>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+// ========================================
+// JOIN REQUESTS TAB
+// ========================================
+function RequestsTab({ communityId }: { communityId: string }) {
+  const [requests, setRequests] = useState<(CommunityMember & { profile?: Profile })[]>([]);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
+
+  const loadRequests = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('community_members')
+      .select('*, profile:profiles(*)')
+      .eq('community_id', communityId)
+      .eq('status', 'pending')
+      .order('joined_at');
+
+    if (data) {
+      setRequests(data.map((r) => ({ ...r, profile: Array.isArray(r.profile) ? r.profile[0] : r.profile })));
+    }
+    setLoading(false);
+  }, [communityId, supabase]);
+
+  useEffect(() => {
+    loadRequests();
+  }, [loadRequests]);
+
+  async function handleApprove(requestId: string) {
+    const { error } = await supabase
+      .from('community_members')
+      .update({ status: 'approved' })
+      .eq('id', requestId);
+
+    if (error) {
+      alert(error.message);
+    } else {
+      loadRequests();
+    }
+  }
+
+  async function handleReject(requestId: string) {
+    const { error } = await supabase
+      .from('community_members')
+      .delete()
+      .eq('id', requestId);
+
+    if (error) {
+      alert(error.message);
+    } else {
+      loadRequests();
+    }
+  }
+
+  if (loading) return <div className="text-center py-6 text-xs text-text-dim">Loading requests...</div>;
+
+  return (
+    <div className="space-y-4">
+      <h3 className="font-extrabold text-sm text-slate-900 mb-2">Pending Access Requests</h3>
+      {requests.length === 0 ? (
+        <div className="text-center py-12 text-text-muted neu-card p-6 border border-purple-300/20 shadow-sm">
+          <p className="text-xs font-semibold">No pending join requests for this community hub.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {requests.map((req) => (
+            <div key={req.id} className="neu-card p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-purple-300/30 shadow-[4px_4px_12px_rgba(147,51,234,0.06),-4px_-4px_12px_#ffffff]">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 neu-convex rounded-2xl flex items-center justify-center text-purple-700 font-black text-sm border border-white/80 shrink-0">
+                  {req.profile?.full_name?.charAt(0) || '?'}
+                </div>
+                <div>
+                  <p className="font-extrabold text-sm text-slate-900">{req.profile?.full_name}</p>
+                  <p className="text-text-muted text-xs font-normal">
+                    {req.profile?.branch} {req.profile?.year && `· ${req.profile.year}`}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleApprove(req.id)}
+                  className="py-2 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                  Approve
+                </button>
+                <button
+                  onClick={() => handleReject(req.id)}
+                  className="py-2 px-4 rounded-xl border border-rose-200 text-rose-700 font-bold text-xs hover:text-rose-950 hover:bg-rose-50/50 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                  Reject
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

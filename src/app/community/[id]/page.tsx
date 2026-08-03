@@ -61,7 +61,11 @@ export default function CommunityDetailPage() {
 
         if (mem) {
           setMembership(mem);
-          setActiveTab('feed'); // Members default to feed
+          if (mem.status === 'approved') {
+            setActiveTab('feed'); // Approved members default to feed
+          } else {
+            setActiveTab('members'); // Pending members default to members list
+          }
         }
       }
       setLoading(false);
@@ -86,13 +90,14 @@ export default function CommunityDetailPage() {
         .update({ college_id: community.college_id })
         .eq('id', userId);
 
-      // 3. Insert new membership
+      // 3. Insert new membership (status is pending)
       const { error: joinError } = await supabase
         .from('community_members')
         .insert({
           user_id: userId,
           community_id: community.id,
-          role: 'member'
+          role: 'member',
+          status: 'pending'
         });
 
       if (joinError) {
@@ -118,11 +123,12 @@ export default function CommunityDetailPage() {
 
   if (!community) return null;
 
-  const isMember = !!membership;
+  const isMember = membership && membership.status === 'approved';
+  const isPending = membership && membership.status === 'pending';
   const isCreator = membership?.role === 'creator';
   const tabs = isMember 
     ? ['feed', 'announcements', 'members', 'resources', 'events']
-    : ['members']; // Non-members only see Members list
+    : ['members']; // Non-members and pending requests only see Members list
 
   return (
     <section className="min-h-screen pt-32 pb-20 px-6 max-w-6xl mx-auto space-y-8">
@@ -161,13 +167,20 @@ export default function CommunityDetailPage() {
           >
             Sign Up to Join Hub ⚡
           </Link>
+        ) : isPending ? (
+          <button
+            disabled
+            className="py-3 px-6 rounded-xl border border-purple-200 text-purple-700 font-bold text-xs bg-purple-50/50 hover:scale-100 disabled:opacity-75"
+          >
+            ⏳ Request Pending Approval
+          </button>
         ) : !isMember ? (
           <button
             onClick={handleJoinOrSwitch}
-            disabled={joining || userProfile?.status === 'pending'}
+            disabled={joining}
             className="btn btn-primary py-3 px-6 shadow-[4px_4px_12px_rgba(147,51,234,0.25)] hover:scale-[1.01] disabled:opacity-50"
           >
-            {joining ? 'Switching Hub...' : userProfile?.status === 'pending' ? 'Pending Approval' : 'Switch to this Community ⚡'}
+            {joining ? 'Requesting...' : 'Request to Join ⚡'}
           </button>
         ) : null}
       </div>
@@ -176,12 +189,14 @@ export default function CommunityDetailPage() {
       {!isMember && (
         <div className="p-6 rounded-2xl border border-purple-300/40 bg-purple-50/50 text-center space-y-3">
           <h3 className="font-extrabold text-slate-950 text-sm sm:text-base">
-            🔓 Unlock Full Community Interaction
+            {isPending ? '⏳ Join Request Pending' : '🔓 Unlock Full Community Interaction'}
           </h3>
           <p className="text-text-muted text-xs sm:text-sm font-medium max-w-2xl mx-auto">
             {!userId 
               ? "Sign in to participate in discussion threads, check announcements, coordinate events, and access the PDF resource vault."
-              : "You are not a member of this college community. Switch to this community hub above to participate in discussion threads, check announcements, coordinate events, and access the PDF resource vault."}
+              : isPending
+              ? "Your request to join this community is pending approval by the Campus Admin. Once approved, you will unlock full access to the discussion feed, resources, and events."
+              : "You are not a member of this college community. Request to join this community hub above to participate in discussion threads, check announcements, coordinate events, and access the PDF resource vault."}
           </p>
         </div>
       )}
@@ -497,6 +512,7 @@ function MembersTab({ communityId }: { communityId: string }) {
         .from('community_members')
         .select('*, profile:profiles(full_name, profile_image, branch, year, status)')
         .eq('community_id', communityId)
+        .eq('status', 'approved')
         .order('joined_at');
 
       if (data) {
