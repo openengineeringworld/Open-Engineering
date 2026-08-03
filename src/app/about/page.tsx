@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import FadeIn from '@/components/animations/FadeIn';
 
 const stats = [
-  { label: 'College Community Hubs', value: '50+', icon: '🏛️' },
+  { label: 'College Chapters', value: '50+', icon: '🏛️' },
   { label: 'Student Engineers', value: '1,000+', icon: '👥' },
   { label: 'Active R&D Projects', value: '15+', icon: '🚀' },
   { label: 'Real Solutions Built', value: '100%', icon: '⚡' },

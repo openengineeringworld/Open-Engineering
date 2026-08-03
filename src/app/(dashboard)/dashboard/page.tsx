@@ -62,10 +62,10 @@ export default async function DashboardPage() {
             Awaiting Admin Approval
           </h2>
           <p className="text-slate-700 text-sm font-medium leading-relaxed">
-            Your registration for the college hub <span className="font-extrabold text-purple-700">&ldquo;{community.college?.name}&rdquo;</span> is currently being reviewed by Open Engineering Admins.
+            Your registration for the college chapter <span className="font-extrabold text-purple-700">&ldquo;{community.college?.name}&rdquo;</span> is currently being reviewed by Open Engineering Admins.
           </p>
           <p className="text-text-muted text-xs font-normal">
-            Once approved, your college hub will go live and you will have full access to discussions, shared resources, events, and member channels.
+            Once approved, your college chapter will go live and you will have full access to discussions, shared resources, events, and member channels.
           </p>
         </div>
       </div>
@@ -169,7 +169,7 @@ export default async function DashboardPage() {
           </div>
           <h3 className="text-lg font-black text-slate-900 mb-2">Join a Community</h3>
           <p className="text-text-muted text-sm mb-6 font-normal max-w-md mx-auto">
-            Connect with your college peers by joining or creating a community hub.
+            Connect with your college peers by joining or creating a campus chapter.
           </p>
           <Link href="/onboarding" className="py-3.5 px-8 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all inline-block">
             Join Community

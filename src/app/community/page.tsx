@@ -64,12 +64,12 @@ export default async function CommunityPage() {
       <section className="section pt-36 pb-16 relative overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
           <FadeIn className="text-center max-w-3xl mx-auto">
-            <span className="badge badge-primary mb-4">Engineering Hubs</span>
+            <span className="badge badge-primary mb-4">Engineering Chapters</span>
             <h1 className="text-4xl sm:text-5xl font-extrabold mb-6">
               Your College, Your <span className="gradient-text">Community</span>
             </h1>
             <p className="text-text-muted text-lg leading-relaxed mb-8 font-normal">
-              Every engineering college has its dedicated hub. Join yours to connect with peers, 
+              Every engineering college has its dedicated chapter. Join yours to connect with peers, 
               share resources, discuss ideas, and collaborate on real-world projects.
             </p>
             <Link
@@ -89,7 +89,7 @@ export default async function CommunityPage() {
       <section className="section-sm pb-20">
         <div className="container mx-auto px-6">
           <FadeIn className="text-center mb-12">
-            <span className="badge badge-primary mb-3">Hub Features</span>
+            <span className="badge badge-primary mb-3">Chapter Features</span>
             <h2 className="text-3xl font-extrabold">
               What You Get in <span className="gradient-text">Community</span>
             </h2>
@@ -119,7 +119,7 @@ export default async function CommunityPage() {
               Choose Your <span className="gradient-text">Path</span>
             </h2>
             <p className="text-text-muted text-sm font-normal max-w-xl mx-auto">
-              Whether you want to join an existing campus hub or launch a brand new community for your college — we have you covered.
+              Whether you want to join an existing campus chapter or launch a brand new community for your college — we have you covered.
             </p>
           </FadeIn>
 
@@ -133,7 +133,7 @@ export default async function CommunityPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-extrabold text-slate-950">Join Campus Hub</h3>
+                  <h3 className="text-xl font-extrabold text-slate-950">Join Campus Chapter</h3>
                   <p className="text-text-muted text-sm leading-relaxed font-normal">
                     Search for your college and request to join the community. Connect with peer student engineers, share learning resources, and participate in discussions.
                   </p>
@@ -158,9 +158,9 @@ export default async function CommunityPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-extrabold text-slate-950">Launch Campus Hub</h3>
+                  <h3 className="text-xl font-extrabold text-slate-950">Launch Campus Chapter</h3>
                   <p className="text-text-muted text-sm leading-relaxed font-normal">
-                    Cannot find your college community? Register your college, launch a new hub, and become the campus admin to lead engineering projects in your college.
+                    Cannot find your college community? Register your college, launch a new chapter, and become the campus admin to lead engineering projects in your college.
                   </p>
                 </div>
                 <div className="mt-8 pt-4 border-t border-purple-200/40">
@@ -168,7 +168,7 @@ export default async function CommunityPage() {
                     href="/community/create"
                     className="w-full py-3.5 px-5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
                   >
-                    Launch New Hub ⚡
+                    Launch Campus Chapter ⚡
                   </Link>
                 </div>
               </div>

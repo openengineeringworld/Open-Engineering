@@ -57,7 +57,7 @@ export default function MyCommunityPage() {
             Awaiting Approval
           </h2>
           <p className="text-slate-700 text-sm font-medium leading-relaxed">
-            Your request to join the college hub <span className="font-extrabold text-purple-700">&ldquo;{community.name}&rdquo;</span> has been sent to the Campus Admin for approval.
+            Your request to join the college chapter <span className="font-extrabold text-purple-700">&ldquo;{community.name}&rdquo;</span> has been sent to the Campus Admin for approval.
           </p>
           <p className="text-text-muted text-xs font-normal">
             Once the Campus Admin approves your request, you will immediately unlock access to the discussion feed, announcements, resources, and events.
@@ -806,7 +806,7 @@ function RequestsTab({ communityId }: { communityId: string }) {
       <h3 className="font-extrabold text-sm text-slate-900 mb-2">Pending Access Requests</h3>
       {requests.length === 0 ? (
         <div className="text-center py-12 text-text-muted neu-card p-6 border border-purple-300/20 shadow-sm">
-          <p className="text-xs font-semibold">No pending join requests for this community hub.</p>
+          <p className="text-xs font-semibold">No pending join requests for this campus chapter.</p>
         </div>
       ) : (
         <div className="space-y-3">

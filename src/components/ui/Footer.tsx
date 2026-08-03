@@ -15,7 +15,7 @@ const footerLinks = {
     { href: '/jobs', label: 'Job Openings' },
     { href: '/internship', label: 'Internships' },
     { href: '/academy', label: 'Engineering Academy' },
-    { href: '/community', label: 'College Hubs' },
+    { href: '/community', label: 'Campus Chapters' },
   ],
 };
 
@@ -42,7 +42,7 @@ export default function Footer() {
             <Logo size="lg" className="mb-5" />
             <p className="text-text-muted text-sm leading-relaxed mb-6 max-w-sm font-normal">
               Empowering students to learn engineering concepts & apply them to real-world challenges. 
-              Connecting college hubs across the nation.
+              Connecting campus communities across the nation.
             </p>
 
             {/* Tactile Neumorphic Social Buttons */}
@@ -144,7 +144,7 @@ export default function Footer() {
 
           <div className="flex items-center gap-6">
             <Link href="/community" className="text-text-dim hover:text-primary transition-colors text-xs font-medium">
-              Community Hub
+              Campus Chapters
             </Link>
             <Link href="/about" className="text-text-dim hover:text-primary transition-colors text-xs font-medium">
               About

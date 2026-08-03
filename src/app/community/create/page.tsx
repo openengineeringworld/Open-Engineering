@@ -137,7 +137,7 @@ export default function CreateCommunityPage() {
           .single();
 
         if (commFetchError || !autoComm) {
-          throw new Error('Failed to retrieve the launched community hub.');
+          throw new Error('Failed to retrieve the launched community chapter.');
         }
 
         community = autoComm;
@@ -149,14 +149,14 @@ export default function CreateCommunityPage() {
 
         const selectedCol = colleges.find((c) => c.id === collegeId);
         if (!selectedCol || !selectedCol.community) {
-          throw new Error('Selected college or community hub was not found.');
+          throw new Error('Selected college or community chapter was not found.');
         }
 
         community = selectedCol.community;
       }
 
       if (!community) {
-        throw new Error('Community hub could not be found.');
+        throw new Error('Community chapter could not be found.');
       }
 
       // 4. Verify if the community already has an active creator/admin
@@ -205,7 +205,7 @@ export default function CreateCommunityPage() {
         .update({ college_id: collegeId })
         .eq('id', userId);
 
-      setSuccess('Your campus community hub has been successfully launched! It is awaiting Open Engineering Admin verification, but you are now registered as the Campus Creator & Admin.');
+      setSuccess('Your campus community chapter has been successfully launched! It is awaiting Open Engineering Admin verification, but you are now registered as the Campus Creator & Admin.');
       
       setTimeout(() => {
         router.push('/dashboard/my-community');
@@ -227,9 +227,9 @@ export default function CreateCommunityPage() {
           >
             ← Back to Communities
           </Link>
-          <span className="badge badge-primary mb-3">Launch Hub</span>
+          <span className="badge badge-primary mb-3">Launch Chapter</span>
           <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
-            Pioneer Your Campus <span className="gradient-text">Hub</span>
+            Pioneer Your Campus <span className="gradient-text">Chapter</span>
           </h1>
           <p className="text-text-muted text-sm font-normal">
             Select your college to claim admin rights, or register a new one to go live.
@@ -241,7 +241,7 @@ export default function CreateCommunityPage() {
             <div className="w-14 h-14 neu-convex rounded-2xl flex items-center justify-center text-purple-700 mx-auto mb-3 border border-white/80 shadow-sm animate-bounce">
               ⚡
             </div>
-            <h3 className="text-xl font-extrabold text-slate-950 mb-2">Campus Hub Launched!</h3>
+            <h3 className="text-xl font-extrabold text-slate-950 mb-2">Campus Chapter Launched!</h3>
             <p className="text-slate-700 text-xs sm:text-sm font-medium leading-relaxed max-w-md mx-auto">
               {success}
             </p>
@@ -408,7 +408,7 @@ export default function CreateCommunityPage() {
               disabled={submitting || (!isCustomCollege && !selectedCollegeId)}
               className="w-full py-3.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50"
             >
-              {submitting ? 'Launching Campus Hub...' : 'Launch Campus Hub & Become Admin ⚡'}
+              {submitting ? 'Launching Campus Chapter...' : 'Launch Campus Chapter & Become Admin ⚡'}
             </button>
           </form>
         )}

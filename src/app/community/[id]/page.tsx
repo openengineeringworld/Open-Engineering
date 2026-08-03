@@ -165,7 +165,7 @@ export default function CommunityDetailPage() {
             href={`/signup?redirect=/community/${community.id}`}
             className="btn btn-primary py-3 px-6 shadow-[4px_4px_12px_rgba(147,51,234,0.25)] hover:scale-[1.01]"
           >
-            Sign Up to Join Hub ⚡
+            Sign Up to Join Chapter ⚡
           </Link>
         ) : isPending ? (
           <button
@@ -196,7 +196,7 @@ export default function CommunityDetailPage() {
               ? "Sign in to participate in discussion threads, check announcements, coordinate events, and access the PDF resource vault."
               : isPending
               ? "Your request to join this community is pending approval by the Campus Admin. Once approved, you will unlock full access to the discussion feed, resources, and events."
-              : "You are not a member of this college community. Request to join this community hub above to participate in discussion threads, check announcements, coordinate events, and access the PDF resource vault."}
+              : "You are not a member of this college community. Request to join this community chapter above to participate in discussion threads, check announcements, coordinate events, and access the PDF resource vault."}
           </p>
         </div>
       )}

@@ -321,7 +321,7 @@ export default function Navbar() {
                       href="/signup?redirect=/onboarding"
                       className="w-full py-3.5 rounded-2xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs text-center block shadow-[4px_4px_14_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] transition-all"
                     >
-                      Join Community Hub
+                      Join Community
                     </Link>
                     <Link
                       href="/login"

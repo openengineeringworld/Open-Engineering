@@ -196,7 +196,7 @@ export default function SignUpPage() {
   return (
     <div className="neu-card p-8 sm:p-10 border border-purple-300/40 shadow-[10px_10px_24px_rgba(147,51,234,0.14),-10px_-10px_24px_#ffffff]">
       <h1 className="text-2xl font-black mb-2 text-center text-slate-950">Create Account</h1>
-      <p className="text-text-muted text-sm text-center mb-8 font-medium">Join the engineering community & campus hub</p>
+      <p className="text-text-muted text-sm text-center mb-8 font-medium">Join the engineering community & campus chapter</p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Section 1: Account Information */}
@@ -428,7 +428,7 @@ export default function SignUpPage() {
           disabled={loading} 
           className="btn btn-primary w-full py-4 shadow-[4px_4px_14px_rgba(147,51,234,0.2),-4px_-4px_14px_#ffffff] hover:scale-[1.01] flex items-center justify-center gap-2 group"
         >
-          <span>{loading ? 'Registering Account...' : 'Sign Up & Register Hub'}</span>
+          <span>{loading ? 'Registering Account...' : 'Sign Up & Register Chapter'}</span>
           {!loading && (
             <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />

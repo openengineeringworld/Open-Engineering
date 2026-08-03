@@ -111,7 +111,7 @@ export default function JoinCommunityPage() {
             ← Back to Communities
           </Link>
           <br />
-          <span className="badge badge-primary mb-3">Community Hubs</span>
+          <span className="badge badge-primary mb-3">Community Chapters</span>
           <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
             Join Your College <span className="gradient-text">Community</span>
           </h1>
@@ -193,7 +193,7 @@ export default function JoinCommunityPage() {
                     href="/community/create"
                     className="text-primary font-bold hover:underline text-xs"
                   >
-                    Launch a new community hub here →
+                    Launch a new campus chapter here →
                   </Link>
                 </div>
               ) : null}
@@ -205,7 +205,7 @@ export default function JoinCommunityPage() {
                 href="/community/create"
                 className="text-xs font-bold text-purple-800 hover:text-purple-950 transition-colors underline"
               >
-                Can't find your college? Click here to launch a new hub →
+                Can't find your college? Click here to launch a new chapter →
               </Link>
             </div>
           </>
