@@ -52,11 +52,15 @@ export default function JoinCommunityPage() {
       .order('name');
 
     if (data) {
-      const mapped = data.map((c) => ({
-        ...c,
-        community: Array.isArray(c.community) ? c.community[0] : c.community,
-      }));
-      setColleges(mapped);
+      const mapped = data.map((c) => {
+        const comms = Array.isArray(c.community) ? c.community : (c.community ? [c.community] : []);
+        const approvedComm = comms.find((comm: any) => comm.status === 'approved');
+        return {
+          ...c,
+          community: approvedComm || null,
+        };
+      });
+      setColleges(mapped as any);
     }
     setLoading(false);
   }
@@ -177,13 +181,22 @@ export default function JoinCommunityPage() {
                         )}
                       </p>
                     </div>
-                    <button
-                      onClick={() => college.community && handleJoin(college.community.id)}
-                      disabled={joining || !college.community}
-                      className="py-2.5 px-5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs shadow-[3px_3px_10px_rgba(0,0,0,0.3),-3px_-3px_10px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all"
-                    >
-                      {joining ? '...' : 'Request to Join'}
-                    </button>
+                    {college.community ? (
+                      <button
+                        onClick={() => handleJoin(college.community!.id)}
+                        disabled={joining}
+                        className="py-2.5 px-5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs shadow-[3px_3px_10px_rgba(0,0,0,0.3),-3px_-3px_10px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all shrink-0"
+                      >
+                        {joining ? '...' : 'Request to Join'}
+                      </button>
+                    ) : (
+                      <Link
+                        href={`/community/create?collegeId=${college.id}&district=${encodeURIComponent(college.district || '')}`}
+                        className="py-2.5 px-4 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-700 font-extrabold text-[11px] hover:scale-[1.02] active:scale-[0.98] transition-all text-center shrink-0"
+                      >
+                        Launch Chapter ⚡
+                      </Link>
+                    )}
                   </div>
                 ))
               ) : search ? (

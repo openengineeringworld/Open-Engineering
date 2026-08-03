@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import type { College, Community } from '@/types/database';
 
-export default function CreateCommunityPage() {
+function CreateCommunityForm() {
   const [colleges, setColleges] = useState<(College & { community?: Community })[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -28,7 +28,16 @@ export default function CreateCommunityPage() {
   const [customDistrict, setCustomDistrict] = useState('');
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
+
+  // Query parameters pre-selection
+  useEffect(() => {
+    const queryDistrict = searchParams.get('district');
+    const queryCollegeId = searchParams.get('collegeId');
+    if (queryDistrict) setSelectedDistrict(queryDistrict);
+    if (queryCollegeId) setSelectedCollegeId(queryCollegeId);
+  }, [searchParams]);
 
   useEffect(() => {
     async function init() {
@@ -147,12 +156,33 @@ export default function CreateCommunityPage() {
           throw new Error('Please select a college.');
         }
 
-        const selectedCol = colleges.find((c) => c.id === collegeId);
-        if (!selectedCol || !selectedCol.community) {
-          throw new Error('Selected college or community chapter was not found.');
-        }
+        const { data: existingComm } = await supabase
+          .from('communities')
+          .select('*')
+          .eq('college_id', collegeId)
+          .maybeSingle();
 
-        community = selectedCol.community;
+        if (!existingComm) {
+          const selectedCol = colleges.find((c) => c.id === collegeId);
+          const colName = selectedCol ? selectedCol.name : 'College';
+          const { data: newComm, error: commError } = await supabase
+            .from('communities')
+            .insert({
+              college_id: collegeId,
+              name: communityName.trim() || `${colName} Chapter`,
+              description: description.trim() || 'Welcome to the campus chapter! Connect with fellow engineers.',
+              status: 'pending'
+            })
+            .select()
+            .single();
+
+          if (commError || !newComm) {
+            throw new Error(commError?.message || 'Failed to create community chapter.');
+          }
+          community = newComm;
+        } else {
+          community = existingComm;
+        }
       }
 
       if (!community) {
@@ -414,5 +444,13 @@ export default function CreateCommunityPage() {
         )}
       </div>
     </section>
+  );
+}
+
+export default function CreateCommunityPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700" /></div>}>
+      <CreateCommunityForm />
+    </Suspense>
   );
 }

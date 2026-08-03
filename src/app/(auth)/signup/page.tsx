@@ -129,26 +129,47 @@ function SignUpForm() {
 
         if (existingCollege) {
           targetCollegeId = existingCollege.id;
-          community = Array.isArray(existingCollege.community) ? existingCollege.community[0] : existingCollege.community;
           
-          if (!community) {
-            setError('Community chapter could not be resolved.');
-            setLoading(false);
-            return;
-          }
-
-          // Check if community already has a creator
-          const { data: existingCreator } = await supabase
-            .from('community_members')
-            .select('id')
-            .eq('community_id', community.id)
-            .eq('role', 'creator')
+          const { data: existingComm } = await supabase
+            .from('communities')
+            .select('*')
+            .eq('college_id', existingCollege.id)
             .maybeSingle();
 
-          if (existingCreator) {
-            setError('This college community already has an active Campus Admin. Please select another college or join as a member.');
-            setLoading(false);
-            return;
+          if (!existingComm) {
+            const { data: newComm, error: commError } = await supabase
+              .from('communities')
+              .insert({
+                college_id: existingCollege.id,
+                name: `${existingCollege.name} Chapter`,
+                description: 'Welcome to the campus chapter! Connect with fellow engineers.',
+                status: 'pending'
+              })
+              .select()
+              .single();
+
+            if (commError || !newComm) {
+              setError(commError?.message || 'Failed to create community chapter.');
+              setLoading(false);
+              return;
+            }
+            community = newComm;
+          } else {
+            community = existingComm;
+
+            // Check if community already has a creator
+            const { data: existingCreator } = await supabase
+              .from('community_members')
+              .select('id')
+              .eq('community_id', community.id)
+              .eq('role', 'creator')
+              .maybeSingle();
+
+            if (existingCreator) {
+              setError('This college community already has an active Campus Admin. Please select another college or join as a member.');
+              setLoading(false);
+              return;
+            }
           }
         } else {
           // Create custom college (triggers trigger that inserts community)
@@ -202,18 +223,29 @@ function SignUpForm() {
         }
 
         targetCollegeId = existingCollege.id;
-        const comm = Array.isArray(existingCollege.community) ? existingCollege.community[0] : existingCollege.community;
         
-        if (comm) {
-          await supabase
-            .from('community_members')
-            .insert({
-              user_id: userId,
-              community_id: comm.id,
-              role: 'member',
-              status: 'pending'
-            });
+        // Fetch community to join (must be approved)
+        const { data: existingComm } = await supabase
+          .from('communities')
+          .select('*')
+          .eq('college_id', existingCollege.id)
+          .eq('status', 'approved')
+          .maybeSingle();
+        
+        if (!existingComm) {
+          setError('There is no active community chapter for this college yet. A Campus Admin must launch it first.');
+          setLoading(false);
+          return;
         }
+
+        await supabase
+          .from('community_members')
+          .insert({
+            user_id: userId,
+            community_id: existingComm.id,
+            role: 'member',
+            status: 'pending'
+          });
       }
 
       // 3. Update profile with academic details, resolved college_id, and mark complete
