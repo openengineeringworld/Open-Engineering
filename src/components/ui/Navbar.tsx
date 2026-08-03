@@ -200,7 +200,7 @@ export default function Navbar() {
             {/* Mobile Hamburger Toggle */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden p-2 rounded-xl neu-convex border border-purple-200/50 text-slate-800"
+              className="lg:hidden w-12 h-12 rounded-2xl neu-convex border border-purple-200/50 text-slate-800 flex items-center justify-center shrink-0"
               aria-label="Toggle menu"
             >
               <div className="w-5 h-4 flex flex-col justify-between">
