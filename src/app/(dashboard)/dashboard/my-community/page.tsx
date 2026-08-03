@@ -771,7 +771,28 @@ function RequestsTab({ communityId }: { communityId: string }) {
 
   useEffect(() => {
     loadRequests();
-  }, [loadRequests]);
+
+    // Subscribe to changes on community_members for this community
+    const channel = supabase
+      .channel(`community-requests-${communityId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'community_members',
+          filter: `community_id=eq.${communityId}`
+        },
+        () => {
+          loadRequests();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [communityId, loadRequests, supabase]);
 
   async function handleApprove(requestId: string, memberUserId: string) {
     const { error } = await supabase

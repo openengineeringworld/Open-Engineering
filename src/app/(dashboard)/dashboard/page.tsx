@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import type { Metadata } from 'next';
+import { PendingCommunityView, PendingMemberView, PendingProfileView } from '@/components/dashboard/PendingScreens';
 
 export const metadata: Metadata = { title: 'Dashboard' };
 
@@ -51,69 +52,15 @@ export default async function DashboardPage() {
   const community = membership?.community as any;
 
   if (community?.status === 'pending') {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center py-12">
-        <div className="neu-card p-8 sm:p-10 max-w-xl text-center border border-purple-300/60 shadow-[12px_12px_28px_rgba(147,51,234,0.16),-12px_-12px_28px_#ffffff] space-y-6">
-          <div className="w-16 h-16 neu-convex rounded-2xl flex items-center justify-center text-amber-600 font-black text-3xl mx-auto border border-white/80 shadow-sm animate-pulse">
-            ⚡
-          </div>
-          <span className="badge badge-warning">● Pending Admin Verification</span>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-950">
-            Awaiting Admin Approval
-          </h2>
-          <p className="text-slate-700 text-sm font-medium leading-relaxed">
-            Your registration for the college chapter <span className="font-extrabold text-purple-700">&ldquo;{community.college?.name}&rdquo;</span> is currently being reviewed by Open Engineering Admins.
-          </p>
-          <p className="text-text-muted text-xs font-normal">
-            Once approved, your college chapter will go live and you will have full access to discussions, shared resources, events, and member channels.
-          </p>
-        </div>
-      </div>
-    );
+    return <PendingCommunityView communityId={community.id} collegeName={community.college?.name || 'College'} />;
   }
 
   if (membership?.status === 'pending') {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center py-12">
-        <div className="neu-card p-8 sm:p-10 max-w-xl text-center border border-purple-300/60 shadow-[12px_12px_28px_rgba(147,51,234,0.16),-12px_-12px_28px_#ffffff] space-y-6">
-          <div className="w-16 h-16 neu-convex rounded-2xl flex items-center justify-center text-purple-700 font-black text-3xl mx-auto border border-white/80 shadow-sm animate-pulse">
-            ⏳
-          </div>
-          <span className="badge badge-warning">● Pending Campus Approval</span>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-950">
-            Awaiting Approval
-          </h2>
-          <p className="text-slate-700 text-sm font-medium leading-relaxed">
-            Your request to join the college chapter <span className="font-extrabold text-purple-700">&ldquo;{community?.name}&rdquo;</span> is pending approval from the Campus Admin.
-          </p>
-          <p className="text-text-muted text-xs font-normal">
-            Once approved, you will have full access to discussions, shared resources, events, and member channels.
-          </p>
-        </div>
-      </div>
-    );
+    return <PendingMemberView userId={user.id} membershipId={membership.id} communityName={community?.name || 'Chapter'} />;
   }
 
   if (profile?.status === 'pending') {
-    return (
-      <div className="min-h-[80vh] flex items-center justify-center py-12">
-        <div className="neu-card p-8 sm:p-10 max-w-xl text-center border border-purple-300/60 shadow-[12px_12px_28px_rgba(147,51,234,0.16),-12px_-12px_28px_#ffffff] space-y-6">
-          <div className="w-16 h-16 neu-convex rounded-2xl flex items-center justify-center text-amber-600 font-black text-3xl mx-auto border border-white/80 shadow-sm animate-pulse">
-            ⏳
-          </div>
-          <span className="badge badge-warning">● Pending Verification</span>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-950">
-            Awaiting Verification
-          </h2>
-          <p className="text-slate-700 text-sm font-medium leading-relaxed">
-            Your account is currently pending verification by Open Engineering Admins.
-          </p>
-          <p className="text-text-muted text-xs font-normal">
-            Once verified, your profile status will be activated and you will gain full access to the platform.
-          </p>
-        </div>
-      </div>
-    );
+    return <PendingProfileView userId={user.id} />;
   }
 
   return (
