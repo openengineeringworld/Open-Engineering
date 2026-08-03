@@ -164,7 +164,7 @@ function SignUpForm() {
 
           await supabase
             .from('community_members')
-            .insert({ user_id: userId, community_id: newCommunity.id, role: 'creator' });
+            .insert({ user_id: userId, community_id: newCommunity.id, role: 'creator', status: 'approved' });
         }
       }
 
