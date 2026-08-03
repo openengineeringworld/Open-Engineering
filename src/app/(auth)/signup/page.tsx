@@ -1,15 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
-export default function SignUpPage() {
+function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isCreatingCommunity = searchParams.get('redirect')?.includes('/community/create');
   const supabase = createClient();
 
   // Onboarding & College Data States
@@ -193,10 +195,16 @@ export default function SignUpPage() {
     }
   }
 
+  const isAdminFlow = showAddCollege || !!isCreatingCommunity;
+
   return (
     <div className="neu-card p-8 sm:p-10 border border-purple-300/40 shadow-[10px_10px_24px_rgba(147,51,234,0.14),-10px_-10px_24px_#ffffff]">
-      <h1 className="text-2xl font-black mb-2 text-center text-slate-950">Create Account</h1>
-      <p className="text-text-muted text-sm text-center mb-8 font-medium">Join the engineering community & campus chapter</p>
+      <h1 className="text-2xl font-black mb-2 text-center text-slate-950">
+        {isAdminFlow ? 'Launch Campus Chapter' : 'Create Account'}
+      </h1>
+      <p className="text-text-muted text-sm text-center mb-8 font-medium">
+        {isAdminFlow ? 'Register as Campus Creator & Administrator' : 'Join the engineering community & campus chapter'}
+      </p>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Section 1: Account Information */}
@@ -386,7 +394,7 @@ export default function SignUpPage() {
         {/* Section 3: Academic Details */}
         <div className="space-y-4 pt-2">
           <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest block border-b border-purple-200/40 pb-1">
-            3. Academic Information
+            3. Academic Information {isAdminFlow && <span className="text-purple-700 font-extrabold text-[9px] lowercase tracking-normal bg-purple-100/80 px-2 py-0.5 rounded-md ml-1.5">(for Campus Admin)</span>}
           </span>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -428,7 +436,7 @@ export default function SignUpPage() {
           disabled={loading} 
           className="btn btn-primary w-full py-4 shadow-[4px_4px_14px_rgba(147,51,234,0.2),-4px_-4px_14px_#ffffff] hover:scale-[1.01] flex items-center justify-center gap-2 group"
         >
-          <span>{loading ? 'Registering Account...' : 'Sign Up & Register Chapter'}</span>
+          <span>{loading ? 'Registering Account...' : isAdminFlow ? 'Sign Up & Launch Chapter as Admin ⚡' : 'Sign Up & Join Community'}</span>
           {!loading && (
             <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -444,5 +452,13 @@ export default function SignUpPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700" /></div>}>
+      <SignUpForm />
+    </Suspense>
   );
 }
