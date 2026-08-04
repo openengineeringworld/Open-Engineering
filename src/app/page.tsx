@@ -406,14 +406,40 @@ function CommunityPreview() {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 text-left">
             {[
-              { icon: '💬', label: 'Discussion Feed', desc: 'Share ideas & technical posts' },
-              { icon: '📢', label: 'Announcements', desc: 'Stay updated on college events' },
-              { icon: '👥', label: 'Member Directory', desc: 'Connect directly with peers' },
+              {
+                icon: (
+                  <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                ),
+                label: 'Discussion Feed',
+                desc: 'Share ideas & technical posts'
+              },
+              {
+                icon: (
+                  <svg className="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                  </svg>
+                ),
+                label: 'Announcements',
+                desc: 'Stay updated on college events'
+              },
+              {
+                icon: (
+                  <svg className="w-6 h-6 text-purple-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                ),
+                label: 'Member Directory',
+                desc: 'Connect directly with peers'
+              },
             ].map((feature) => (
-              <div key={feature.label} className="neu-card p-6">
-                <span className="text-3xl mb-3 block">{feature.icon}</span>
+              <div key={feature.label} className="neu-card p-6 flex flex-col items-start">
+                <div className="w-12 h-12 neu-convex rounded-2xl flex items-center justify-center border border-purple-300/40 shadow-sm mb-4 p-2.5">
+                  {feature.icon}
+                </div>
                 <p className="font-bold text-sm mb-1 text-text">{feature.label}</p>
-                <p className="text-text-muted text-xs">{feature.desc}</p>
+                <p className="text-text-muted text-xs leading-relaxed">{feature.desc}</p>
               </div>
             ))}
           </div>
