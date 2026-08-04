@@ -52,7 +52,7 @@ function Hero() {
               className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-slate-950"
             >
               Learn Engineering.
-              <span className="block text-purple-600 mt-2 filter drop-shadow-[0_2px_10px_rgba(147,51,234,0.1)]">
+              <span className="block text-purple-500 mt-2 filter drop-shadow-[0_2px_8px_rgba(168,85,247,0.15)]">
                 Build Real Solutions.
               </span>
             </motion.h1>
@@ -94,12 +94,13 @@ function Hero() {
             </motion.div>
           </div>
 
-          {/* Right Column - Community & Project Showcase Console */}
+          {/* Right Column - Neumorphic Products & Services Console */}
           <div className="lg:col-span-6 relative h-[500px] w-full flex items-center justify-center">
-            {/* Glowing background shapes */}
-            <div className="absolute w-[360px] h-[360px] rounded-full bg-gradient-to-tr from-purple-100/40 to-indigo-100/30 blur-2xl pointer-events-none" />
-            
-            {/* Main Interactive Dashboard Console */}
+            {/* Soft ambient background glows */}
+            <div className="absolute w-[380px] h-[380px] rounded-full bg-purple-200/10 blur-[80px] pointer-events-none" />
+            <div className="absolute w-[280px] h-[280px] rounded-full bg-indigo-200/10 blur-[60px] pointer-events-none" />
+
+            {/* Main Neumorphic Console Dashboard */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ 
@@ -112,76 +113,72 @@ function Hero() {
                 scale: { duration: 0.6, delay: 0.1 },
                 y: { repeat: Infinity, duration: 8, ease: "easeInOut" }
               }}
-              className="w-full max-w-[420px] bg-white/80 backdrop-blur-xl border border-white/95 rounded-3xl shadow-[16px_16px_40px_rgba(147,51,234,0.12),-16px_-16px_40px_#ffffff] p-6 space-y-6 z-10"
+              className="neu-card w-full max-w-[420px] p-6 space-y-6 z-10"
             >
-              {/* Header block */}
-              <div className="flex items-center justify-between border-b border-purple-100/50 pb-3">
+              {/* Console Header */}
+              <div className="flex items-center justify-between border-b border-purple-200/20 pb-3">
                 <div>
-                  <h3 className="font-extrabold text-sm text-slate-900">Engineering Hub Console</h3>
-                  <p className="text-[10px] text-text-muted font-normal">Real-time campus network metrics</p>
+                  <h3 className="font-extrabold text-sm text-slate-900">Ecosystem Console</h3>
+                  <p className="text-[10px] text-text-muted font-semibold">Active Products & Services</p>
                 </div>
-                <span className="badge badge-success text-[10px] px-2.5 py-1">● Network Live</span>
+                <span className="badge badge-primary text-[10px]">● Operational</span>
               </div>
 
-              {/* Grid Content */}
-              <div className="space-y-4">
-                {/* 1. College Chapters metric */}
-                <div className="neu-pressed p-4 rounded-2xl border border-purple-200/20 bg-white/40 flex items-center justify-between shadow-[inset_2px_2px_6px_rgba(147,51,234,0.06),inset_-2px_-2px_6px_#ffffff]">
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Campus Chapters</p>
-                    <p className="text-xl font-black text-slate-950">12 Active Hubs</p>
+              {/* Products Subsection */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[10px] font-black uppercase text-purple-700 tracking-wider">Featured Products</span>
+                  <span className="text-[9px] font-bold text-slate-400">2 Active Powertrains</span>
+                </div>
+                
+                {/* Product 1: BhumiCare */}
+                <div className="neu-convex p-3.5 flex items-center justify-between hover:scale-[1.01] transition-transform duration-300">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 neu-pressed rounded-xl flex items-center justify-center text-lg shrink-0">
+                      🌱
+                    </div>
+                    <div>
+                      <p className="font-extrabold text-xs text-slate-900">BhumiCare AI</p>
+                      <p className="text-[10px] text-text-muted">Soil Health Assessment</p>
+                    </div>
                   </div>
-                  {/* Avatar stack */}
-                  <div className="flex -space-x-2 overflow-hidden">
-                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-purple-100 flex items-center justify-center text-[10px] font-black text-purple-700">A</div>
-                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-700">P</div>
-                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-pink-100 flex items-center justify-center text-[10px] font-black text-pink-700">K</div>
-                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-600">+8</div>
-                  </div>
+                  <span className="badge badge-success text-[8px] font-bold py-0.5 px-2">Live</span>
                 </div>
 
-                {/* 2. Featured Projects list */}
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">Featured Campus Projects</p>
-                  
-                  {/* Project Item 1 */}
-                  <div className="neu-card p-3.5 flex items-center justify-between border border-purple-100/40 hover:scale-[1.01] transition-transform duration-300 bg-white/65">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 neu-convex rounded-xl flex items-center justify-center text-purple-600 font-bold text-base border border-white shrink-0">
-                        🌱
-                      </div>
-                      <div>
-                        <p className="font-extrabold text-xs text-slate-900">Soil Health Monitor</p>
-                        <p className="text-[10px] text-text-muted">A.D.P. College Chapter</p>
-                      </div>
+                {/* Product 2: Acc2Not */}
+                <div className="neu-convex p-3.5 flex items-center justify-between hover:scale-[1.01] transition-transform duration-300">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 neu-pressed rounded-xl flex items-center justify-center text-lg shrink-0">
+                      🚗
                     </div>
-                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Active</span>
-                  </div>
-
-                  {/* Project Item 2 */}
-                  <div className="neu-card p-3.5 flex items-center justify-between border border-purple-100/40 hover:scale-[1.01] transition-transform duration-300 bg-white/65">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 neu-convex rounded-xl flex items-center justify-center text-indigo-600 font-bold text-base border border-white shrink-0">
-                        🚗
-                      </div>
-                      <div>
-                        <p className="font-extrabold text-xs text-slate-900">IoT Crash Detector</p>
-                        <p className="text-[10px] text-text-muted">Nagaon College Chapter</p>
-                      </div>
+                    <div>
+                      <p className="font-extrabold text-xs text-slate-900">Acc2Not IoT</p>
+                      <p className="text-[10px] text-text-muted">Vehicle Crash Detection</p>
                     </div>
-                    <span className="text-[9px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">Ongoing</span>
                   </div>
+                  <span className="badge badge-warning text-[8px] font-bold py-0.5 px-2">Active</span>
                 </div>
+              </div>
 
-                {/* 3. Global Stats */}
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="neu-card p-3 text-center border border-purple-100/30 bg-white/65">
-                    <p className="text-lg font-black text-purple-700">500+</p>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase">Members</p>
+              {/* Services Subsection */}
+              <div className="space-y-3">
+                <span className="text-[10px] font-black uppercase text-indigo-700 tracking-wider px-1 block">Engineering Services</span>
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Service 1: Web Dev */}
+                  <div className="neu-convex p-3 text-center flex flex-col items-center justify-center gap-1.5 hover:scale-[1.02] transition-transform">
+                    <span className="text-xl">💻</span>
+                    <div>
+                      <p className="font-extrabold text-[11px] text-slate-900">Web Dev</p>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">Next.js 16</p>
+                    </div>
                   </div>
-                  <div className="neu-card p-3 text-center border border-purple-100/30 bg-white/65">
-                    <p className="text-lg font-black text-indigo-600">15+</p>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase">Projects Shared</p>
+                  {/* Service 2: Mobile Dev */}
+                  <div className="neu-convex p-3 text-center flex flex-col items-center justify-center gap-1.5 hover:scale-[1.02] transition-transform">
+                    <span className="text-xl">📱</span>
+                    <div>
+                      <p className="font-extrabold text-[11px] text-slate-900">Mobile Dev</p>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">iOS & Android</p>
+                    </div>
                   </div>
                 </div>
               </div>
