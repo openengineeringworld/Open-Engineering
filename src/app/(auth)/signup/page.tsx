@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -16,42 +16,60 @@ function SignUpForm() {
 
   // Onboarding & College Data States
   const [colleges, setColleges] = useState<any[]>([]);
-  const [districts, setDistricts] = useState<string[]>([]);
   const [selectedDistrict, setSelectedDistrict] = useState('');
-  const [filteredColleges, setFilteredColleges] = useState<any[]>([]);
   const [selectedCollege, setSelectedCollege] = useState('');
   const [showAddCollege, setShowAddCollege] = useState(false);
+
+  const isAdminFlow = showAddCollege || !!isCreatingCommunity;
 
   // Load districts and colleges on mount
   useEffect(() => {
     async function loadColleges() {
       const { data: collegeData } = await supabase
         .from('colleges')
-        .select('*')
+        .select('*, community:communities(*)')
         .order('name');
 
       if (collegeData) {
         setColleges(collegeData);
-        // Extract unique districts
-        const uniqueDists = Array.from(
-          new Set(collegeData.map((c: any) => c.district).filter(Boolean))
-        ) as string[];
-        setDistricts(uniqueDists.sort());
       }
     }
     loadColleges();
   }, []);
 
-  // Filter colleges when district changes
-  useEffect(() => {
-    if (selectedDistrict) {
-      setFilteredColleges(colleges.filter((c) => c.district === selectedDistrict));
-      setSelectedCollege('');
-    } else {
-      setFilteredColleges([]);
-      setSelectedCollege('');
+  // Compute available districts dynamically based on approval
+  const districts = useMemo(() => {
+    let list = colleges;
+    if (!isAdminFlow) {
+      list = colleges.filter((c) => {
+        const comms = Array.isArray(c.community) ? c.community : (c.community ? [c.community] : []);
+        return comms.some((comm: any) => comm.status === 'approved');
+      });
     }
-  }, [selectedDistrict, colleges]);
+    const uniqueDists = Array.from(
+      new Set(list.map((c: any) => c.district).filter(Boolean))
+    ) as string[];
+    return uniqueDists.sort();
+  }, [colleges, isAdminFlow]);
+
+  // Filter colleges based on district and approval status
+  const filteredColleges = useMemo(() => {
+    if (!selectedDistrict) return [];
+    return colleges.filter((c) => {
+      if (c.district !== selectedDistrict) return false;
+      if (!isAdminFlow) {
+        const comms = Array.isArray(c.community) ? c.community : (c.community ? [c.community] : []);
+        const approvedComm = comms.find((comm: any) => comm.status === 'approved');
+        return !!approvedComm;
+      }
+      return true;
+    });
+  }, [selectedDistrict, colleges, isAdminFlow]);
+
+  // Reset selected college when district changes
+  useEffect(() => {
+    setSelectedCollege('');
+  }, [selectedDistrict]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -262,8 +280,6 @@ function SignUpForm() {
       setLoading(false);
     }
   }
-
-  const isAdminFlow = showAddCollege || !!isCreatingCommunity;
 
   return (
     <div className="neu-card p-8 sm:p-10 border border-purple-300/40 shadow-[10px_10px_24px_rgba(147,51,234,0.14),-10px_-10px_24px_#ffffff]">
