@@ -52,7 +52,7 @@ function Hero() {
               className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-slate-950"
             >
               Learn Engineering.
-              <span className="block text-purple-500 mt-2 filter drop-shadow-[0_2px_8px_rgba(168,85,247,0.15)]">
+              <span className="block text-sky-500 mt-2 filter drop-shadow-[0_2px_8px_rgba(14,165,233,0.15)]">
                 Build Real Solutions.
               </span>
             </motion.h1>
@@ -134,8 +134,10 @@ function Hero() {
                 {/* Product 1: BhumiCare */}
                 <div className="neu-convex p-3.5 flex items-center justify-between hover:scale-[1.01] transition-transform duration-300">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 neu-pressed rounded-xl flex items-center justify-center text-lg shrink-0">
-                      🌱
+                    <div className="w-10 h-10 neu-pressed rounded-xl flex items-center justify-center shrink-0">
+                      <svg className="w-5 h-5 text-emerald-600 animate-[pulse_2s_infinite]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
                     </div>
                     <div>
                       <p className="font-extrabold text-xs text-slate-900">BhumiCare AI</p>
@@ -148,8 +150,10 @@ function Hero() {
                 {/* Product 2: Acc2Not */}
                 <div className="neu-convex p-3.5 flex items-center justify-between hover:scale-[1.01] transition-transform duration-300">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 neu-pressed rounded-xl flex items-center justify-center text-lg shrink-0">
-                      🚗
+                    <div className="w-10 h-10 neu-pressed rounded-xl flex items-center justify-center shrink-0">
+                      <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
                     </div>
                     <div>
                       <p className="font-extrabold text-xs text-slate-900">Acc2Not IoT</p>
@@ -165,19 +169,27 @@ function Hero() {
                 <span className="text-[10px] font-black uppercase text-indigo-700 tracking-wider px-1 block">Engineering Services</span>
                 <div className="grid grid-cols-2 gap-3">
                   {/* Service 1: Web Dev */}
-                  <div className="neu-convex p-3 text-center flex flex-col items-center justify-center gap-1.5 hover:scale-[1.02] transition-transform">
-                    <span className="text-xl">💻</span>
+                  <div className="neu-convex p-3.5 text-center flex flex-col items-center justify-center gap-2 hover:scale-[1.02] transition-transform">
+                    <div className="w-8 h-8 neu-pressed rounded-lg flex items-center justify-center shrink-0">
+                      <svg className="w-4 h-4 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                      </svg>
+                    </div>
                     <div>
                       <p className="font-extrabold text-[11px] text-slate-900">Web Dev</p>
                       <p className="text-[9px] text-slate-400 font-bold uppercase">Next.js 16</p>
                     </div>
                   </div>
                   {/* Service 2: Mobile Dev */}
-                  <div className="neu-convex p-3 text-center flex flex-col items-center justify-center gap-1.5 hover:scale-[1.02] transition-transform">
-                    <span className="text-xl">📱</span>
+                  <div className="neu-convex p-3.5 text-center flex flex-col items-center justify-center gap-2 hover:scale-[1.02] transition-transform">
+                    <div className="w-8 h-8 neu-pressed rounded-lg flex items-center justify-center shrink-0">
+                      <svg className="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
+                    </div>
                     <div>
                       <p className="font-extrabold text-[11px] text-slate-900">Mobile Dev</p>
-                      <p className="text-[9px] text-slate-400 font-bold uppercase">iOS & Android</p>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">React Native</p>
                     </div>
                   </div>
                 </div>
