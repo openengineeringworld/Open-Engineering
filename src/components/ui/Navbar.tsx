@@ -318,16 +318,16 @@ export default function Navbar() {
                 ) : (
                   <>
                     <Link
-                      href="/signup?redirect=/onboarding"
-                      className="w-full py-3.5 rounded-2xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs text-center block shadow-[4px_4px_14_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] transition-all"
+                      href="/services"
+                      className="w-full py-3.5 rounded-2xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs text-center block shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] transition-all"
                     >
-                      Join Community
+                      Explore Services
                     </Link>
                     <Link
-                      href="/login"
+                      href="/products"
                       className="w-full py-3 rounded-2xl neu-convex text-slate-900 font-bold text-xs text-center block border border-purple-200/60 shadow-[4px_4px_12px_rgba(120,80,180,0.12),-4px_-4px_12px_#ffffff]"
                     >
-                      Sign In
+                      Discover Products
                     </Link>
                   </>
                 )}
