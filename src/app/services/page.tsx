@@ -136,7 +136,7 @@ export default function ServicesPage() {
               Services Designed to <span className="gradient-text">Build & Scale</span>
             </h1>
             <p className="text-text-muted text-lg leading-relaxed font-normal">
-              Tailored engineering solutions built with precision, 3D neumorphic elegance, and scalable architecture.
+              Practical engineering solutions built to bridge the gap between classroom theory and real-world execution.
             </p>
           </FadeIn>
         </div>
