@@ -28,22 +28,6 @@ function Hero() {
           
           {/* Left Column - Content */}
           <div className="lg:col-span-6 text-left space-y-6 max-w-2xl mx-auto lg:mx-0">
-            {/* Pill Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-purple-200/60 shadow-[4px_4px_10px_rgba(147,51,234,0.04)]"
-            >
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600"></span>
-              </span>
-              <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest">
-                The Engineering Hub of the Future
-              </span>
-            </motion.div>
-
             {/* Headline */}
             <motion.h1
               initial={{ opacity: 0, y: 15 }}
@@ -52,7 +36,7 @@ function Hero() {
               className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-slate-950"
             >
               Learn Engineering.
-              <span className="block text-sky-500 mt-2 filter drop-shadow-[0_2px_8px_rgba(14,165,233,0.15)]">
+              <span className="block text-transparent bg-clip-text gradient-text-primary mt-2 filter drop-shadow-[0_2px_8px_rgba(126,34,206,0.15)]">
                 Build Real Solutions.
               </span>
             </motion.h1>
