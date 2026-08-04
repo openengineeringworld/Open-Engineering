@@ -9,69 +9,191 @@ import Logo from '@/components/ui/Logo';
 // ========================================
 // Hero Section (Animated Typography & 3D Neumorphism Upgrade)
 // ========================================
+// ========================================
+// Hero Section (Animated Typography & 3D Neumorphism Upgrade)
+// ========================================
 function Hero() {
   return (
-    <section className="relative pt-36 pb-20 min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Neumorphic Ambient Grids */}
-      <div className="absolute inset-0 bg-grid opacity-40 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-radial pointer-events-none" />
+    <section className="relative pt-32 pb-24 min-h-screen flex items-center overflow-hidden bg-slate-50/30">
+      {/* Background Gradients and Glowing Blobs */}
+      <div className="absolute inset-0 bg-grid opacity-30 pointer-events-none" />
       
-      {/* floating Neumorphic Elements */}
-      <div className="hidden lg:block absolute left-12 top-1/3 w-16 h-16 rounded-full neu-convex border border-white/60 shadow-[6px_6px_16px_rgba(120,80,180,0.06),-6px_-6px_16px_#ffffff] pointer-events-none" />
-      <div className="hidden lg:block absolute right-16 top-1/2 w-14 h-14 rounded-2xl neu-convex border border-white/60 shadow-[6px_6px_16px_rgba(120,80,180,0.06),-6px_-6px_16px_#ffffff] rotate-12 pointer-events-none" />
+      {/* Ambient Glowing Blobs */}
+      <div className="absolute top-1/4 left-1/4 w-[35rem] h-[35rem] bg-purple-300/25 rounded-full blur-[110px] pointer-events-none animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-[30rem] h-[30rem] bg-indigo-300/20 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute top-1/2 right-10 w-[20rem] h-[20rem] bg-pink-200/15 rounded-full blur-[90px] pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center max-w-4xl mx-auto pt-8">
-          {/* Unified Single-Color Headline with Custom Cursive Accent */}
-          <motion.h1
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-            className="mb-6 max-w-4xl mx-auto text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.12] text-slate-950"
-          >
-            <span className="block mb-1">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center pt-8">
+          
+          {/* Left Column - Content */}
+          <div className="lg:col-span-6 text-left space-y-6 max-w-2xl mx-auto lg:mx-0">
+            {/* Pill Badge */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-purple-200/60 shadow-[4px_4px_10px_rgba(147,51,234,0.04)]"
+            >
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-600"></span>
+              </span>
+              <span className="text-[10px] font-black text-purple-700 uppercase tracking-widest">
+                The Engineering Hub of the Future
+              </span>
+            </motion.div>
+
+            {/* Headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-slate-950"
+            >
               Learn Engineering.
-            </span>
-            <span className="block text-purple-600 font-cursive text-5xl sm:text-7xl md:text-8xl tracking-wide mt-2">
-              Build Real Solutions.
-            </span>
-          </motion.h1>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 mt-2 filter drop-shadow-[0_2px_10px_rgba(147,51,234,0.15)]">
+                Build Real Solutions.
+              </span>
+            </motion.h1>
 
-          {/* Clean, Fluid Subtitle for Mobile & Desktop */}
-          <motion.p
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-2xl mx-auto mb-10 text-slate-700 text-sm sm:text-base leading-relaxed font-normal px-2"
-          >
-            An open ecosystem bridging the gap between classroom theory and real-world engineering. 
-            Collaborate with fellow student engineers, access verified study vaults, and build industrial-grade projects.
-          </motion.p>
-
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 sm:mb-14"
-          >
-            <Link
-              href="/services"
-              className="w-full sm:w-auto py-4 px-8 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 shadow-[5px_5px_12px_rgba(0,0,0,0.25),-5px_-5px_12px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all group"
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-slate-700 text-sm sm:text-base leading-relaxed font-normal"
             >
-              <span>Explore Services</span>
-              <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </Link>
+              An open ecosystem bridging the gap between classroom theory and real-world engineering. 
+              Collaborate with fellow student engineers, access verified study vaults, and build industrial-grade projects.
+            </motion.p>
 
-            <Link
-              href="/products"
-              className="w-full sm:w-auto py-4 px-8 rounded-xl neu-card text-slate-800 hover:text-purple-900 font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 border border-white/80 shadow-[6px_6px_14px_rgba(120,80,180,0.1),-6px_-6px_14px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all"
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-center gap-4 pt-2"
             >
-              <span>Discover Our Products</span>
-            </Link>
-          </motion.div>
+              <Link
+                href="/services"
+                className="w-full sm:w-auto py-4 px-8 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 shadow-[5px_5px_12px_rgba(0,0,0,0.25),-5px_-5px_12px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all group"
+              >
+                <span>Explore Services</span>
+                <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </Link>
+
+              <Link
+                href="/products"
+                className="w-full sm:w-auto py-4 px-8 rounded-xl neu-card text-slate-800 hover:text-purple-950 font-bold text-sm sm:text-base inline-flex items-center justify-center border border-white/85 shadow-[6px_6px_14px_rgba(120,80,180,0.1)] hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                <span>Discover Products</span>
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* Right Column - Interactive Tech Cockpit */}
+          <div className="lg:col-span-6 relative h-[450px] sm:h-[500px] w-full flex items-center justify-center">
+            
+            {/* Background glowing rings */}
+            <div className="absolute w-[350px] h-[350px] rounded-full border border-purple-200/20 shadow-[inset_0_0_50px_rgba(147,51,234,0.03)] animate-[spin_60s_linear_infinite]" />
+            <div className="absolute w-[250px] h-[250px] rounded-full border border-indigo-200/10" />
+
+            {/* Floating Element 1: Glassmorphic Code Terminal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1,
+                y: [0, -10, 0] 
+              }}
+              transition={{ 
+                opacity: { duration: 0.5, delay: 0.2 },
+                scale: { duration: 0.5, delay: 0.2 },
+                y: { repeat: Infinity, duration: 6, ease: "easeInOut" }
+              }}
+              className="absolute left-2 sm:left-6 top-8 w-[280px] sm:w-[320px] bg-white/70 backdrop-blur-xl border border-white/90 rounded-2xl shadow-[12px_12px_32px_rgba(147,51,234,0.1),-12px_-12px_32px_#ffffff] p-4.5 space-y-3 z-10"
+            >
+              <div className="flex items-center justify-between border-b border-purple-100/50 pb-2">
+                <div className="flex gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-400 block" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400 block" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 block" />
+                </div>
+                <span className="text-[10px] font-bold text-slate-400 font-mono">soil_sensor.py</span>
+              </div>
+              <pre className="text-[10px] font-mono text-slate-700 leading-normal overflow-hidden select-none">
+                <code>
+                  <span className="text-purple-600">import</span> iot_engine <span className="text-purple-600">as</span> iot<br />
+                  <span className="text-purple-600">import</span> time<br /><br />
+                  sensor = iot.SoilSensor(pin=<span className="text-indigo-600">"A0"</span>)<br />
+                  <span className="text-purple-600">while</span> <span className="text-emerald-600">True</span>:<br />
+                  &nbsp;&nbsp;moisture = sensor.read_val()<br />
+                  &nbsp;&nbsp;<span className="text-purple-600">if</span> moisture &lt; <span className="text-indigo-600">30</span>:<br />
+                  &nbsp;&nbsp;&nbsp;&nbsp;iot.alert(<span className="text-indigo-600">"Dry Soil!"</span>)<br />
+                  &nbsp;&nbsp;time.sleep(<span className="text-indigo-600">1</span>)
+                </code>
+              </pre>
+            </motion.div>
+
+            {/* Floating Element 2: Telemetry Status Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1,
+                y: [0, 10, 0] 
+              }}
+              transition={{ 
+                opacity: { duration: 0.5, delay: 0.4 },
+                scale: { duration: 0.5, delay: 0.4 },
+                y: { repeat: Infinity, duration: 5, ease: "easeInOut" }
+              }}
+              className="absolute right-2 sm:right-6 bottom-12 w-[220px] sm:w-[240px] bg-white/80 backdrop-blur-xl border border-white/90 rounded-2xl shadow-[12px_12px_32px_rgba(147,51,234,0.1),-12px_-12px_32px_#ffffff] p-4.5 space-y-3.5 z-20"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-black uppercase text-purple-700 tracking-wider">IoT Telemetry</span>
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[9px] text-slate-400 font-bold uppercase">Soil Moisture</p>
+                <p className="text-xl font-black text-slate-900">42.8% <span className="text-xs font-bold text-emerald-600 font-mono">OK</span></p>
+              </div>
+              <div className="flex gap-1 h-8 items-end justify-between px-1">
+                <span className="w-3 bg-purple-200 h-3 rounded-sm animate-[pulse_2s_infinite_100ms]" />
+                <span className="w-3 bg-purple-300 h-5 rounded-sm animate-[pulse_2s_infinite_300ms]" />
+                <span className="w-3 bg-purple-400 h-6 rounded-sm animate-[pulse_2s_infinite_500ms]" />
+                <span className="w-3 bg-indigo-500 h-8 rounded-sm animate-[pulse_2s_infinite_700ms]" />
+                <span className="w-3 bg-indigo-600 h-5 rounded-sm animate-[pulse_2s_infinite_900ms]" />
+              </div>
+            </motion.div>
+
+            {/* Floating Element 3: Center Glowing Logo Panel */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1,
+                rotate: [0, 4, -4, 0]
+              }}
+              transition={{ 
+                opacity: { duration: 0.5, delay: 0.1 },
+                scale: { duration: 0.5, delay: 0.1 },
+                rotate: { repeat: Infinity, duration: 12, ease: "easeInOut" }
+              }}
+              className="w-48 h-48 rounded-3xl bg-gradient-to-br from-white/90 to-purple-50/50 border border-white shadow-[18px_18px_40px_rgba(147,51,234,0.15),-18px_-18px_40px_#ffffff] flex items-center justify-center p-6 relative group z-15"
+            >
+              <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-indigo-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <Logo className="w-20 h-20 transition-transform duration-500 group-hover:scale-110" />
+            </motion.div>
+
+          </div>
+
         </div>
       </div>
     </section>
