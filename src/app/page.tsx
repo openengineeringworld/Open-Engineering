@@ -52,7 +52,7 @@ function Hero() {
               className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.1] text-slate-950"
             >
               Learn Engineering.
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600 mt-2 filter drop-shadow-[0_2px_10px_rgba(147,51,234,0.15)]">
+              <span className="block text-purple-600 mt-2 filter drop-shadow-[0_2px_10px_rgba(147,51,234,0.1)]">
                 Build Real Solutions.
               </span>
             </motion.h1>
@@ -94,104 +94,98 @@ function Hero() {
             </motion.div>
           </div>
 
-          {/* Right Column - Interactive Tech Cockpit */}
-          <div className="lg:col-span-6 relative h-[450px] sm:h-[500px] w-full flex items-center justify-center">
+          {/* Right Column - Community & Project Showcase Console */}
+          <div className="lg:col-span-6 relative h-[500px] w-full flex items-center justify-center">
+            {/* Glowing background shapes */}
+            <div className="absolute w-[360px] h-[360px] rounded-full bg-gradient-to-tr from-purple-100/40 to-indigo-100/30 blur-2xl pointer-events-none" />
             
-            {/* Background glowing rings */}
-            <div className="absolute w-[350px] h-[350px] rounded-full border border-purple-200/20 shadow-[inset_0_0_50px_rgba(147,51,234,0.03)] animate-[spin_60s_linear_infinite]" />
-            <div className="absolute w-[250px] h-[250px] rounded-full border border-indigo-200/10" />
-
-            {/* Floating Element 1: Glassmorphic Code Terminal */}
+            {/* Main Interactive Dashboard Console */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
               animate={{ 
                 opacity: 1, 
                 scale: 1,
-                y: [0, -10, 0] 
+                y: [0, -8, 0]
               }}
               transition={{ 
-                opacity: { duration: 0.5, delay: 0.2 },
-                scale: { duration: 0.5, delay: 0.2 },
-                y: { repeat: Infinity, duration: 6, ease: "easeInOut" }
+                opacity: { duration: 0.6, delay: 0.1 },
+                scale: { duration: 0.6, delay: 0.1 },
+                y: { repeat: Infinity, duration: 8, ease: "easeInOut" }
               }}
-              className="absolute left-2 sm:left-6 top-8 w-[280px] sm:w-[320px] bg-white/70 backdrop-blur-xl border border-white/90 rounded-2xl shadow-[12px_12px_32px_rgba(147,51,234,0.1),-12px_-12px_32px_#ffffff] p-4.5 space-y-3 z-10"
+              className="w-full max-w-[420px] bg-white/80 backdrop-blur-xl border border-white/95 rounded-3xl shadow-[16px_16px_40px_rgba(147,51,234,0.12),-16px_-16px_40px_#ffffff] p-6 space-y-6 z-10"
             >
-              <div className="flex items-center justify-between border-b border-purple-100/50 pb-2">
-                <div className="flex gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-rose-400 block" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-amber-400 block" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 block" />
+              {/* Header block */}
+              <div className="flex items-center justify-between border-b border-purple-100/50 pb-3">
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-900">Engineering Hub Console</h3>
+                  <p className="text-[10px] text-text-muted font-normal">Real-time campus network metrics</p>
                 </div>
-                <span className="text-[10px] font-bold text-slate-400 font-mono">soil_sensor.py</span>
+                <span className="badge badge-success text-[10px] px-2.5 py-1">● Network Live</span>
               </div>
-              <pre className="text-[10px] font-mono text-slate-700 leading-normal overflow-hidden select-none">
-                <code>
-                  <span className="text-purple-600">import</span> iot_engine <span className="text-purple-600">as</span> iot<br />
-                  <span className="text-purple-600">import</span> time<br /><br />
-                  sensor = iot.SoilSensor(pin=<span className="text-indigo-600">"A0"</span>)<br />
-                  <span className="text-purple-600">while</span> <span className="text-emerald-600">True</span>:<br />
-                  &nbsp;&nbsp;moisture = sensor.read_val()<br />
-                  &nbsp;&nbsp;<span className="text-purple-600">if</span> moisture &lt; <span className="text-indigo-600">30</span>:<br />
-                  &nbsp;&nbsp;&nbsp;&nbsp;iot.alert(<span className="text-indigo-600">"Dry Soil!"</span>)<br />
-                  &nbsp;&nbsp;time.sleep(<span className="text-indigo-600">1</span>)
-                </code>
-              </pre>
-            </motion.div>
 
-            {/* Floating Element 2: Telemetry Status Card */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1,
-                y: [0, 10, 0] 
-              }}
-              transition={{ 
-                opacity: { duration: 0.5, delay: 0.4 },
-                scale: { duration: 0.5, delay: 0.4 },
-                y: { repeat: Infinity, duration: 5, ease: "easeInOut" }
-              }}
-              className="absolute right-2 sm:right-6 bottom-12 w-[220px] sm:w-[240px] bg-white/80 backdrop-blur-xl border border-white/90 rounded-2xl shadow-[12px_12px_32px_rgba(147,51,234,0.1),-12px_-12px_32px_#ffffff] p-4.5 space-y-3.5 z-20"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-black uppercase text-purple-700 tracking-wider">IoT Telemetry</span>
-                <span className="flex h-2 w-2 relative">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[9px] text-slate-400 font-bold uppercase">Soil Moisture</p>
-                <p className="text-xl font-black text-slate-900">42.8% <span className="text-xs font-bold text-emerald-600 font-mono">OK</span></p>
-              </div>
-              <div className="flex gap-1 h-8 items-end justify-between px-1">
-                <span className="w-3 bg-purple-200 h-3 rounded-sm animate-[pulse_2s_infinite_100ms]" />
-                <span className="w-3 bg-purple-300 h-5 rounded-sm animate-[pulse_2s_infinite_300ms]" />
-                <span className="w-3 bg-purple-400 h-6 rounded-sm animate-[pulse_2s_infinite_500ms]" />
-                <span className="w-3 bg-indigo-500 h-8 rounded-sm animate-[pulse_2s_infinite_700ms]" />
-                <span className="w-3 bg-indigo-600 h-5 rounded-sm animate-[pulse_2s_infinite_900ms]" />
+              {/* Grid Content */}
+              <div className="space-y-4">
+                {/* 1. College Chapters metric */}
+                <div className="neu-pressed p-4 rounded-2xl border border-purple-200/20 bg-white/40 flex items-center justify-between shadow-[inset_2px_2px_6px_rgba(147,51,234,0.06),inset_-2px_-2px_6px_#ffffff]">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Campus Chapters</p>
+                    <p className="text-xl font-black text-slate-950">12 Active Hubs</p>
+                  </div>
+                  {/* Avatar stack */}
+                  <div className="flex -space-x-2 overflow-hidden">
+                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-purple-100 flex items-center justify-center text-[10px] font-black text-purple-700">A</div>
+                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-indigo-100 flex items-center justify-center text-[10px] font-black text-indigo-700">P</div>
+                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-pink-100 flex items-center justify-center text-[10px] font-black text-pink-700">K</div>
+                    <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-600">+8</div>
+                  </div>
+                </div>
+
+                {/* 2. Featured Projects list */}
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-1">Featured Campus Projects</p>
+                  
+                  {/* Project Item 1 */}
+                  <div className="neu-card p-3.5 flex items-center justify-between border border-purple-100/40 hover:scale-[1.01] transition-transform duration-300 bg-white/65">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 neu-convex rounded-xl flex items-center justify-center text-purple-600 font-bold text-base border border-white shrink-0">
+                        🌱
+                      </div>
+                      <div>
+                        <p className="font-extrabold text-xs text-slate-900">Soil Health Monitor</p>
+                        <p className="text-[10px] text-text-muted">A.D.P. College Chapter</p>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Active</span>
+                  </div>
+
+                  {/* Project Item 2 */}
+                  <div className="neu-card p-3.5 flex items-center justify-between border border-purple-100/40 hover:scale-[1.01] transition-transform duration-300 bg-white/65">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 neu-convex rounded-xl flex items-center justify-center text-indigo-600 font-bold text-base border border-white shrink-0">
+                        🚗
+                      </div>
+                      <div>
+                        <p className="font-extrabold text-xs text-slate-900">IoT Crash Detector</p>
+                        <p className="text-[10px] text-text-muted">Nagaon College Chapter</p>
+                      </div>
+                    </div>
+                    <span className="text-[9px] font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-100">Ongoing</span>
+                  </div>
+                </div>
+
+                {/* 3. Global Stats */}
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <div className="neu-card p-3 text-center border border-purple-100/30 bg-white/65">
+                    <p className="text-lg font-black text-purple-700">500+</p>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase">Members</p>
+                  </div>
+                  <div className="neu-card p-3 text-center border border-purple-100/30 bg-white/65">
+                    <p className="text-lg font-black text-indigo-600">15+</p>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase">Projects Shared</p>
+                  </div>
+                </div>
               </div>
             </motion.div>
-
-            {/* Floating Element 3: Center Glowing Logo Panel */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1,
-                rotate: [0, 4, -4, 0]
-              }}
-              transition={{ 
-                opacity: { duration: 0.5, delay: 0.1 },
-                scale: { duration: 0.5, delay: 0.1 },
-                rotate: { repeat: Infinity, duration: 12, ease: "easeInOut" }
-              }}
-              className="w-48 h-48 rounded-3xl bg-gradient-to-br from-white/90 to-purple-50/50 border border-white shadow-[18px_18px_40px_rgba(147,51,234,0.15),-18px_-18px_40px_#ffffff] flex items-center justify-center p-6 relative group z-15"
-            >
-              <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/10 to-indigo-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <Logo className="w-20 h-20 transition-transform duration-500 group-hover:scale-110" />
-            </motion.div>
-
           </div>
 
         </div>
