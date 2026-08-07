@@ -118,9 +118,6 @@ export default async function CommunityPage() {
                     </svg>
                   </div>
                   <h3 className="text-xl font-extrabold text-slate-950">Join Campus Chapter</h3>
-                  <p className="text-text-muted text-sm leading-relaxed font-normal">
-                    Search for your college and request to join the community. Connect with peer student engineers, share learning resources, and participate in discussions.
-                  </p>
                 </div>
                 <div className="mt-8 pt-4 border-t border-purple-200/40">
                   <Link
