@@ -43,7 +43,7 @@ function CreateCommunityForm() {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        router.push('/signup?redirect=/community/create');
+        router.push('/community/signup?redirect=/community/create');
         return;
       }
       setUserId(user.id);

@@ -162,7 +162,7 @@ export default function CommunityDetailPage() {
         {/* CTA Actions */}
         {!userId ? (
           <Link
-            href={`/signup?redirect=/community/${community.id}`}
+            href={`/community/signup?redirect=/community/${community.id}`}
             className="btn btn-primary py-3 px-6 shadow-[4px_4px_12px_rgba(147,51,234,0.25)] hover:scale-[1.01]"
           >
             Sign Up to Join Chapter ⚡

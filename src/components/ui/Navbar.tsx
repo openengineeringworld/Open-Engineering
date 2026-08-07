@@ -165,36 +165,38 @@ export default function Navbar() {
 
           {/* Auth Aware Action Buttons */}
           <div className="flex items-center gap-2.5">
-            {user ? (
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/dashboard"
-                  className="hidden sm:inline-flex py-2 px-4 rounded-xl neu-card text-purple-950 font-extrabold text-xs border border-purple-300/50 hover:scale-[1.02] transition-all"
-                >
-                  Dashboard ⚡
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  className="py-2 px-3 rounded-xl neu-card text-rose-700 font-bold text-xs border border-rose-200/60 hover:text-rose-950 transition-all"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : pathname?.startsWith('/community') ? (
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/login"
-                  className="hidden sm:inline-flex px-3.5 py-2 rounded-xl text-xs font-bold text-slate-800 hover:text-purple-950 transition-colors"
-                >
-                  Sign In
-                </Link>
-                <Link
-                  href="/signup?redirect=/onboarding"
-                  className="hidden sm:inline-flex py-2.5 px-5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm shadow-[3px_3px_12px_rgba(0,0,0,0.25),-3px_-3px_12px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all"
-                >
-                  Join Community
-                </Link>
-              </div>
+            {pathname?.startsWith('/community') ? (
+              user ? (
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/community/dashboard"
+                    className="hidden sm:inline-flex py-2 px-4 rounded-xl neu-card text-purple-950 font-extrabold text-xs border border-purple-300/50 hover:scale-[1.02] transition-all"
+                  >
+                    Dashboard ⚡
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className="py-2 px-3 rounded-xl neu-card text-rose-700 font-bold text-xs border border-rose-200/60 hover:text-rose-950 transition-all"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link
+                    href="/community/login"
+                    className="hidden sm:inline-flex px-3.5 py-2 rounded-xl text-xs font-bold text-slate-800 hover:text-purple-950 transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/community/signup"
+                    className="hidden sm:inline-flex py-2.5 px-5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm shadow-[3px_3px_12px_rgba(0,0,0,0.25),-3px_-3px_12px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all"
+                  >
+                    Join Community
+                  </Link>
+                </div>
+              )
             ) : null}
 
             {/* Mobile Hamburger Toggle */}
@@ -299,36 +301,38 @@ export default function Navbar() {
               </div>
 
               {/* 3D Neumorphic Drawer Footer Action Buttons */}
-              {user ? (
-                <div className="pt-4 border-t border-purple-200/40 mt-auto space-y-2.5 shrink-0">
-                  <Link
-                    href="/dashboard"
-                    className="w-full py-3 rounded-2xl neu-convex text-purple-950 font-bold text-xs text-center block border border-purple-200/60 shadow-[4px_4px_12px_rgba(120,80,180,0.12),-4px_-4px_12px_#ffffff]"
-                  >
-                    Dashboard
-                  </Link>
-                  <button
-                    onClick={handleSignOut}
-                    className="w-full py-3 rounded-2xl neu-card text-rose-700 font-bold text-xs text-center block border border-rose-200/60 shadow-[3px_3px_8px_rgba(225,29,72,0.08),-3px_-3px_8px_#ffffff]"
-                  >
-                    Sign Out
-                  </button>
-                </div>
-              ) : pathname?.startsWith('/community') ? (
-                <div className="pt-4 border-t border-purple-200/40 mt-auto space-y-2.5 shrink-0">
-                  <Link
-                    href="/login"
-                    className="w-full py-3 rounded-2xl neu-convex text-slate-900 font-bold text-xs text-center block border border-purple-200/60 shadow-[4px_4px_12px_rgba(120,80,180,0.12),-4px_-4px_12px_#ffffff]"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/signup?redirect=/onboarding"
-                    className="w-full py-3.5 rounded-2xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs text-center block shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] transition-all"
-                  >
-                    Sign Up / Join Community
-                  </Link>
-                </div>
+              {pathname?.startsWith('/community') ? (
+                user ? (
+                  <div className="pt-4 border-t border-purple-200/40 mt-auto space-y-2.5 shrink-0">
+                    <Link
+                      href="/community/dashboard"
+                      className="w-full py-3 rounded-2xl neu-convex text-purple-950 font-bold text-xs text-center block border border-purple-200/60 shadow-[4px_4px_12px_rgba(120,80,180,0.12),-4px_-4px_12px_#ffffff]"
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full py-3 rounded-2xl neu-card text-rose-700 font-bold text-xs text-center block border border-rose-200/60 shadow-[3px_3px_8px_rgba(225,29,72,0.08),-3px_-3px_8px_#ffffff]"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="pt-4 border-t border-purple-200/40 mt-auto space-y-2.5 shrink-0">
+                    <Link
+                      href="/community/login"
+                      className="w-full py-3 rounded-2xl neu-convex text-slate-900 font-bold text-xs text-center block border border-purple-200/60 shadow-[4px_4px_12px_rgba(120,80,180,0.12),-4px_-4px_12px_#ffffff]"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/community/signup"
+                      className="w-full py-3.5 rounded-2xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs text-center block shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] transition-all"
+                    >
+                      Sign Up / Join Community
+                    </Link>
+                  </div>
+                )
               ) : null}
             </motion.div>
           </>
