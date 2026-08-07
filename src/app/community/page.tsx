@@ -75,7 +75,6 @@ export default async function CommunityPage() {
       <section className="section-sm pb-20">
         <div className="container mx-auto px-6">
           <FadeIn className="text-center mb-12">
-            <span className="badge badge-primary mb-3">Chapter Features</span>
             <h2 className="text-3xl font-extrabold">
               What You Get in <span className="gradient-text">Community</span>
             </h2>
@@ -100,7 +99,6 @@ export default async function CommunityPage() {
       <section className="section-sm pb-24">
         <div className="container mx-auto px-6">
           <FadeIn className="text-center mb-12">
-            <span className="badge badge-primary mb-3">Get Started</span>
             <h2 className="text-3xl font-extrabold mb-3">
               Choose Your <span className="gradient-text">Path</span>
             </h2>
