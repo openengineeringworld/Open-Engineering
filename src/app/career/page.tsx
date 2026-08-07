@@ -25,7 +25,7 @@ const careerPaths = [
     title: 'Internship Program',
     desc: 'Hands-on 2-3 month internships for students looking to gain production experience with Next.js, IoT, and AI platforms.',
     href: '/internship',
-    count: '2 Active Cohorts',
+    count: '3 Active Cohorts',
     badgeClass: 'badge-primary',
     icon: (
       <svg className="w-10 h-10 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 48 48" fill="none">

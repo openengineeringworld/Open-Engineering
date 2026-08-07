@@ -7,12 +7,30 @@ import FadeIn from '@/components/animations/FadeIn';
 
 const internships = [
   {
+    id: 'ai-productivity-intern',
+    title: 'AI for Productivity & Future',
+    category: 'AI & Future Tech',
+    desc: 'Leverage cutting-edge AI models, prompt engineering, autonomous agents, and AI-driven workflows to boost personal and enterprise productivity.',
+    learn: [
+      'ChatGPT, Claude, Perplexity & DeepSeek LLM Workflows',
+      'AI Development Tools (Cursor, GitHub Copilot, v0)',
+      'Autonomous AI Agents (LangChain, AutoGPT, CrewAI)',
+      'AI Workflow & Automation Platforms (n8n, Make, Zapier)',
+      'Advanced Prompt Engineering & Fine-Tuning',
+      'Multimodal AI Tools (Midjourney, Runway, ElevenLabs)',
+    ],
+    icon: (
+      <svg className="w-10 h-10 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 48 48" fill="none">
+        <path d="M24 6L28 16L38 20L28 24L24 34L20 24L10 20L20 16L24 6Z" className="fill-purple-100 stroke-purple-600" strokeWidth="2.5" strokeLinejoin="round" />
+        <path d="M35 28L37 33L42 35L37 37L35 42L33 37L28 35L33 33L35 28Z" className="fill-indigo-100 stroke-indigo-600" strokeWidth="2" strokeLinejoin="round" />
+        <circle cx="14" cy="34" r="3" className="fill-purple-600" />
+      </svg>
+    ),
+  },
+  {
     id: 'web-intern',
-    title: 'Full Stack Web Development Intern',
+    title: 'Full Stack Web Development',
     category: 'Engineering Cohort',
-    duration: '3 Months',
-    mode: 'Remote (Flexible)',
-    stipend: 'Performance Stipend + Certificate',
     desc: 'Work alongside our core engineering team to build real-world web applications. Master Next.js 16, Supabase, Tailwind CSS, and production CI/CD workflows.',
     learn: [
       'Next.js 16 App Router & React 19',
@@ -30,26 +48,21 @@ const internships = [
     ),
   },
   {
-    id: 'marketing-intern',
-    title: 'Growth Marketing & Community Intern',
-    category: 'Community & Growth',
-    duration: '2 Months',
-    mode: 'Remote (Flexible)',
-    stipend: 'Growth Incentive + Certificate',
-    desc: 'Drive growth across our college community hubs across India. Lead social media strategies, campus ambassador outreach, and event marketing.',
+    id: 'iot-robotics-intern',
+    title: 'IoT & Robotics Engineering',
+    category: 'Hardware & Embedded',
+    desc: 'Work on real-world IoT systems, microcontrollers (ESP32/Arduino/STM32), sensor networks, robotic automation, and hardware-cloud integration.',
     learn: [
-      'Social Media Engine & Content Creation',
-      'College Campus Community Building',
-      'Digital Marketing Analytics & SEO',
-      'Event Planning & Partnership Outreach',
+      'Microcontroller Programming (ESP32, Arduino & STM32)',
+      'IoT Cloud Sync & Wireless Protocols (MQTT, BLE, HTTP)',
+      'Sensor Integration, Actuators & Robotic Kinematics',
+      'Circuit Design, PCB Layout & Hardware Prototyping',
     ],
     icon: (
       <svg className="w-10 h-10 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 48 48" fill="none">
-        <path d="M6 42H42" className="stroke-slate-400" strokeWidth="2.5" strokeLinecap="round" />
-        <rect x="10" y="26" width="6" height="16" rx="2" className="fill-purple-200 stroke-purple-600" strokeWidth="2" />
-        <rect x="21" y="18" width="6" height="24" rx="2" className="fill-indigo-200 stroke-indigo-600" strokeWidth="2" />
-        <rect x="32" y="10" width="6" height="32" rx="2" className="fill-purple-600 stroke-purple-800" strokeWidth="2" />
-        <path d="M8 22L19 14L28 18L40 6" className="stroke-purple-600" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <rect x="14" y="14" width="20" height="20" rx="4" className="fill-purple-100 stroke-purple-600" strokeWidth="2.5" />
+        <path d="M20 14V8M28 14V8M20 34V40M28 34V40M14 20H8M14 28H8M34 20H40M34 28H40" className="stroke-indigo-600" strokeWidth="2.5" strokeLinecap="round" />
+        <circle cx="24" cy="24" r="4" className="fill-purple-600" />
       </svg>
     ),
   },
@@ -101,18 +114,9 @@ export default function InternshipPage() {
                     <span className="text-xs font-bold uppercase tracking-wider text-primary mb-1 block">
                       {intern.category}
                     </span>
-                    <h2 className="text-2xl font-extrabold text-text tracking-tight mb-2 group-hover:text-primary transition-colors">
+                    <h2 className="text-2xl font-extrabold text-text tracking-tight group-hover:text-primary transition-colors">
                       {intern.title}
                     </h2>
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      <span className="badge badge-primary text-xs font-bold">{intern.duration}</span>
-                      <span className="text-xs font-semibold text-slate-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
-                        📍 {intern.mode}
-                      </span>
-                      <span className="text-xs font-semibold text-slate-600 bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
-                        📜 {intern.stipend}
-                      </span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -144,7 +148,9 @@ export default function InternshipPage() {
               {/* 100% Solid Black CTA Button */}
               <div className="pt-5 border-t border-purple-200/40 flex justify-end">
                 <a
-                  href={`mailto:openengineering9@gmail.com?subject=Internship Application: ${encodeURIComponent(intern.title)}`}
+                  href="https://forms.gle/8VQEVc5U6R3R5JAb9"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-full sm:w-auto py-3.5 px-6 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] hover:shadow-[6px_6px_18px_rgba(0,0,0,0.5),-6px_-6px_18px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all group/btn shrink-0"
                 >
                   <span>Apply for Internship</span>

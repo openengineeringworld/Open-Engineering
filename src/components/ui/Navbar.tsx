@@ -167,10 +167,10 @@ export default function Navbar() {
           <div className="flex items-center gap-2.5">
             {pathname?.startsWith('/community') ? (
               user ? (
-                <div className="flex items-center gap-2">
+                <div className="hidden lg:flex items-center gap-2">
                   <Link
                     href="/community/dashboard"
-                    className="hidden sm:inline-flex py-2 px-4 rounded-xl neu-card text-purple-950 font-extrabold text-xs border border-purple-300/50 hover:scale-[1.02] transition-all"
+                    className="py-2 px-4 rounded-xl neu-card text-purple-950 font-extrabold text-xs border border-purple-300/50 hover:scale-[1.02] transition-all"
                   >
                     Dashboard ⚡
                   </Link>
@@ -182,16 +182,16 @@ export default function Navbar() {
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="hidden lg:flex items-center gap-2">
                   <Link
                     href="/community/login"
-                    className="hidden sm:inline-flex px-3.5 py-2 rounded-xl text-xs font-bold text-slate-800 hover:text-purple-950 transition-colors"
+                    className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-800 hover:text-purple-950 transition-colors"
                   >
                     Sign In
                   </Link>
                   <Link
                     href="/community/signup"
-                    className="hidden sm:inline-flex py-2.5 px-5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm shadow-[3px_3px_12px_rgba(0,0,0,0.25),-3px_-3px_12px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all"
+                    className="py-2.5 px-5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm shadow-[3px_3px_12px_rgba(0,0,0,0.25),-3px_-3px_12px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all"
                   >
                     Join Community
                   </Link>
