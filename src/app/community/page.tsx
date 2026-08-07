@@ -61,26 +61,12 @@ export default async function CommunityPage() {
   return (
     <>
       {/* Hero */}
-      <section className="section pt-36 pb-16 relative overflow-hidden">
+      <section className="section pt-36 pb-12 relative overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
           <FadeIn className="text-center max-w-3xl mx-auto">
-            <span className="badge badge-primary mb-4">Engineering Chapters</span>
-            <h1 className="text-4xl sm:text-5xl font-extrabold mb-6">
+            <h1 className="text-4xl sm:text-5xl font-extrabold">
               Your College, Your <span className="gradient-text">Community</span>
             </h1>
-            <p className="text-text-muted text-lg leading-relaxed mb-8 font-normal">
-              Every engineering college has its dedicated chapter. Join yours to connect with peers, 
-              share resources, discuss ideas, and collaborate on real-world projects.
-            </p>
-            <Link
-              href="/community/join"
-              className="py-4 px-8 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] hover:shadow-[6px_6px_18px_rgba(0,0,0,0.5),-6px_-6px_18px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all group/btn"
-            >
-              <span>Join Your College Community</span>
-              <svg className="w-5 h-5 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </Link>
           </FadeIn>
         </div>
       </section>
