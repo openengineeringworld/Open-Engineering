@@ -11,10 +11,11 @@ export async function POST(request: Request) {
       leaderEmail,
       leaderPhone,
       whatsappLink,
-      additionalNotes
+      additionalNotes,
+      password
     } = body;
 
-    if (!collegeFullName || !shortName || !leaderName || !leaderEmail || !leaderPhone || !whatsappLink) {
+    if (!collegeFullName || !shortName || !leaderName || !leaderEmail || !leaderPhone || !whatsappLink || !password) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -94,10 +95,27 @@ export async function POST(request: Request) {
         leader_phone: leaderPhone.trim(),
         whatsapp_link: whatsappLink.trim(),
         additional_notes: additionalNotes ? additionalNotes.trim() : null,
+        password: password.trim(),
         status: 'pending'
       });
     } catch (e) {
-      console.warn('Could not insert to community_applications table:', e);
+      console.warn('Could not insert to community_applications table with password:', e);
+      // Fallback insert without password column if database schema hasn't been migrated yet
+      try {
+        await supabase.from('community_applications').insert({
+          college_full_name: collegeFullName.trim(),
+          college_short_name: shortName.trim(),
+          community_name: communityName,
+          leader_name: leaderName.trim(),
+          leader_email: leaderEmail.trim(),
+          leader_phone: leaderPhone.trim(),
+          whatsapp_link: whatsappLink.trim(),
+          additional_notes: additionalNotes ? additionalNotes.trim() : null,
+          status: 'pending'
+        });
+      } catch (err2) {
+        console.warn('Could not insert to community_applications table:', err2);
+      }
     }
 
     await supabase.from('contact_submissions').insert({
@@ -113,6 +131,7 @@ export async function POST(request: Request) {
         leader_phone: leaderPhone.trim(),
         whatsapp_link: whatsappLink.trim(),
         additional_notes: additionalNotes ? additionalNotes.trim() : '',
+        password: password.trim(),
         community_id: commRecord?.id
       })
     });

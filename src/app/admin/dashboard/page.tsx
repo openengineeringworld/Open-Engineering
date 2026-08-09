@@ -29,6 +29,7 @@ interface CommunityRequest {
     leader_phone?: string;
     whatsapp_link?: string;
     additional_notes?: string;
+    password?: string;
   };
 }
 

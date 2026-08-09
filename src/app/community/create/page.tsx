@@ -17,6 +17,8 @@ export default function CreateCommunityPage() {
   const [leaderPhone, setLeaderPhone] = useState('');
   const [whatsappLink, setWhatsappLink] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   const calculatedCommunityName = shortName.trim()
     ? `Open Engineering ${shortName.trim().toUpperCase()}`
@@ -26,6 +28,18 @@ export default function CreateCommunityPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match. Please verify your password.');
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      setLoading(false);
+      return;
+    }
 
     try {
       const response = await fetch('/api/community/create', {
@@ -38,7 +52,8 @@ export default function CreateCommunityPage() {
           leaderEmail,
           leaderPhone,
           whatsappLink,
-          additionalNotes
+          additionalNotes,
+          password
         })
       });
 
@@ -263,12 +278,30 @@ export default function CreateCommunityPage() {
                 </div>
               </div>
 
+              {/* Step 6: Create Dedicated Community Email */}
+              <div className="neu-card p-6 sm:p-8 flex flex-col sm:flex-row items-start gap-6 relative overflow-hidden border border-purple-200/50">
+                <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white font-black text-xl flex items-center justify-center shrink-0 shadow-lg shadow-purple-600/30">
+                  6
+                </div>
+                <div className="flex-1 w-full">
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">
+                    Create a Dedicated Community Email
+                  </h3>
+                  <p className="text-slate-600 text-sm font-normal leading-relaxed mb-3">
+                    Create an official Gmail / email address for your community chapter (e.g., <strong className="text-purple-700">openengineering.[shortname]@gmail.com</strong> such as <strong className="text-purple-700">openengineering.aec@gmail.com</strong>).
+                  </p>
+                  <div className="p-3.5 neu-pressed rounded-xl bg-purple-50/60 border border-purple-200/60 text-xs sm:text-sm text-slate-700">
+                    💡 <strong className="text-slate-900">Why this is important:</strong> This dedicated email will act as the permanent account for your chapter to hold drives, social handles, and administrative access, making it seamless to pass on to future student leads when you graduate.
+                  </div>
+                </div>
+              </div>
+
             </div>
 
-            {/* Step 6: Registration Form */}
+            {/* Step 7: Registration Form */}
             <div className="neu-card p-6 sm:p-10 border border-purple-300/60 shadow-[8px_8px_22px_rgba(147,51,234,0.12),-8px_-8px_20px_#ffffff]">
               <div className="text-center mb-8">
-                <span className="badge badge-warning mb-2 text-xs">Step 6 of 6</span>
+                <span className="badge badge-warning mb-2 text-xs">Step 7 of 7</span>
                 <h2 className="text-2xl sm:text-3xl font-black text-slate-950">
                   Submit Community Application Form
                 </h2>
@@ -298,6 +331,20 @@ export default function CreateCommunityPage() {
                     value={collegeFullName}
                     onChange={(e) => setCollegeFullName(e.target.value)}
                     placeholder="e.g. Assam Engineering College"
+                    className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="additional-notes" className="block text-xs font-extrabold text-slate-800 mb-1.5">
+                    College Address (Optional)
+                  </label>
+                  <input
+                    id="additional-notes"
+                    type="text"
+                    value={additionalNotes}
+                    onChange={(e) => setAdditionalNotes(e.target.value)}
+                    placeholder="e.g. Jalukbari, Guwahati, Assam 781013"
                     className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
                   />
                 </div>
@@ -392,18 +439,38 @@ export default function CreateCommunityPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label htmlFor="additional-notes" className="block text-xs font-extrabold text-slate-800 mb-1.5">
-                    Core Team Members & Additional Details (Optional)
-                  </label>
-                  <textarea
-                    id="additional-notes"
-                    rows={3}
-                    value={additionalNotes}
-                    onChange={(e) => setAdditionalNotes(e.target.value)}
-                    placeholder="List core team member names, Instagram handle, or any message for the verifying team..."
-                    className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium resize-none"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="create-password" className="block text-xs font-extrabold text-slate-800 mb-1.5">
+                      Create Password *
+                    </label>
+                    <input
+                      id="create-password"
+                      type="password"
+                      required
+                      minLength={6}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="confirm-password" className="block text-xs font-extrabold text-slate-800 mb-1.5">
+                      Confirm Password *
+                    </label>
+                    <input
+                      id="confirm-password"
+                      type="password"
+                      required
+                      minLength={6}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
+                    />
+                  </div>
                 </div>
 
                 <button

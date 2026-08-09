@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import FadeIn from '@/components/animations/FadeIn';
@@ -69,81 +68,6 @@ const internships = [
 ];
 
 export default function InternshipPage() {
-  const [selectedProgram, setSelectedProgram] = useState<typeof internships[0] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState('');
-
-  // Form inputs
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [collegeName, setCollegeName] = useState('');
-  const [branch, setBranch] = useState('');
-  const [year, setYear] = useState('');
-  const [githubUrl, setGithubUrl] = useState('');
-  const [experienceNotes, setExperienceNotes] = useState('');
-
-  const handleOpenModal = (program: typeof internships[0]) => {
-    setSelectedProgram(program);
-    setSuccess(false);
-    setError('');
-  };
-
-  const handleCloseModal = () => {
-    setSelectedProgram(null);
-    setSuccess(false);
-    setError('');
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedProgram) return;
-
-    setLoading(true);
-    setError('');
-
-    try {
-      const res = await fetch('/api/internship/apply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fullName,
-          email,
-          phone,
-          collegeName,
-          branch,
-          year,
-          programId: selectedProgram.id,
-          programTitle: selectedProgram.title,
-          githubUrl,
-          experienceNotes
-        })
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to submit application.');
-      }
-
-      setSuccess(true);
-      setFullName('');
-      setEmail('');
-      setPhone('');
-      setCollegeName('');
-      setBranch('');
-      setYear('');
-      setGithubUrl('');
-      setExperienceNotes('');
-    } catch (err: any) {
-      console.error('Internship application error:', err);
-      setError(err?.message || 'Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <>
       <section className="section pt-36 pb-12">
@@ -226,194 +150,18 @@ export default function InternshipPage() {
                   href="https://forms.gle/8VQEVc5U6R3R5JAb9"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="py-3 px-5 rounded-xl neu-flat text-slate-700 font-bold text-xs hover:bg-slate-200 transition-all inline-flex items-center gap-1.5"
-                >
-                  <span>Google Form Link</span>
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                  </svg>
-                </a>
-
-                <button
-                  type="button"
-                  onClick={() => handleOpenModal(intern)}
                   className="w-full sm:w-auto py-3.5 px-6 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] hover:shadow-[6px_6px_18px_rgba(0,0,0,0.5),-6px_-6px_18px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all group/btn shrink-0"
                 >
-                  <span>Apply On-Site (Supabase) 🚀</span>
+                  <span>Apply Now (Google Form) 🚀</span>
                   <svg className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
-                </button>
+                </a>
               </div>
             </motion.div>
           ))}
         </div>
       </section>
-
-      {/* Interactive Application Modal */}
-      {selectedProgram && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#eef0f8] border border-purple-200 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl space-y-6 relative text-slate-900 my-8">
-            <div className="flex items-center justify-between border-b border-purple-200/80 pb-4">
-              <div>
-                <span className="badge badge-primary text-[10px] uppercase font-bold mb-1">
-                  {selectedProgram.category}
-                </span>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-950">
-                  Apply for {selectedProgram.title}
-                </h3>
-              </div>
-              <button
-                onClick={handleCloseModal}
-                className="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold flex items-center justify-center transition-colors"
-              >
-                ✕
-              </button>
-            </div>
-
-            {success ? (
-              <div className="text-center py-8 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-3xl font-black border-4 border-emerald-300">
-                  ✓
-                </div>
-                <h4 className="text-2xl font-black text-slate-950">Application Submitted!</h4>
-                <p className="text-sm font-medium text-slate-700 max-w-md mx-auto">
-                  Your application for <strong className="text-purple-700">{selectedProgram.title}</strong> has been saved directly to Supabase. Our team will review your submission and update your approval status shortly!
-                </p>
-                <div className="pt-4">
-                  <button
-                    onClick={handleCloseModal}
-                    className="py-3 px-6 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm shadow-md"
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 text-xs font-medium">
-                {error && (
-                  <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-bold text-xs">
-                    {error}
-                  </div>
-                )}
-
-                <div>
-                  <label className="block font-bold text-slate-800 mb-1">Full Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="e.g. Rahul Das"
-                    className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-slate-800 mb-1">Email Address *</label>
-                    <input
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="rahul@example.com"
-                      className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-800 mb-1">WhatsApp / Phone *</label>
-                    <input
-                      type="tel"
-                      required
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+91 98765 43210"
-                      className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-800 mb-1">College / Institution *</label>
-                  <input
-                    type="text"
-                    required
-                    value={collegeName}
-                    onChange={(e) => setCollegeName(e.target.value)}
-                    placeholder="e.g. Assam Engineering College"
-                    className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-slate-800 mb-1">Branch / Major</label>
-                    <input
-                      type="text"
-                      value={branch}
-                      onChange={(e) => setBranch(e.target.value)}
-                      placeholder="Computer Science, ECE..."
-                      className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-800 mb-1">Year of Study</label>
-                    <input
-                      type="text"
-                      value={year}
-                      onChange={(e) => setYear(e.target.value)}
-                      placeholder="1st, 2nd, 3rd, 4th Year"
-                      className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-800 mb-1">GitHub / Portfolio Link (Optional)</label>
-                  <input
-                    type="url"
-                    value={githubUrl}
-                    onChange={(e) => setGithubUrl(e.target.value)}
-                    placeholder="https://github.com/yourusername"
-                    className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-800 mb-1">Why do you want to join this cohort?</label>
-                  <textarea
-                    rows={3}
-                    value={experienceNotes}
-                    onChange={(e) => setExperienceNotes(e.target.value)}
-                    placeholder="Share your goals or relevant projects..."
-                    className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium resize-none"
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-4 border-t border-purple-200">
-                  <button
-                    type="button"
-                    onClick={handleCloseModal}
-                    className="py-3 px-5 rounded-xl neu-flat hover:bg-slate-200 text-slate-800 font-bold text-xs"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="py-3 px-6 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm shadow-md disabled:opacity-50"
-                  >
-                    {loading ? 'Submitting to Supabase...' : 'Submit Application 🚀'}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      )}
     </>
   );
 }

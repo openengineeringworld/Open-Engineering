@@ -62,16 +62,16 @@ export default function CommunityDetailPage() {
       }
       setCommunity(comm);
 
-      // Extract leadName & whatsappLink from description or applications table
+      // Extract leadName & whatsappLink from description or applications/submissions tables
       let lName: string | null = null;
-      let wLink: string | null = null;
+      let wLink: string | null = (comm as any).whatsapp_link || null;
 
       if (comm.description) {
         const leadMatch = comm.description.match(/Lead:\s*([^.(,@]+)/i);
         if (leadMatch && leadMatch[1]) {
           lName = leadMatch[1].trim();
         }
-        const urlMatch = comm.description.match(/(https:\/\/chat\.whatsapp\.com\/[^\s)]+)/i);
+        const urlMatch = comm.description.match(/(https:\/\/(chat\.whatsapp\.com|wa\.me|whatsapp\.com)\/[^\s)]+)/i);
         if (urlMatch && urlMatch[1]) {
           wLink = urlMatch[1];
         }
@@ -82,6 +82,8 @@ export default function CommunityDetailPage() {
           .from('community_applications')
           .select('whatsapp_link, leader_name')
           .or(`community_name.eq."${comm.name}",college_full_name.eq."${comm.college?.name}"`)
+          .order('created_at', { ascending: false })
+          .limit(1)
           .maybeSingle();
 
         if (appData) {
@@ -90,6 +92,38 @@ export default function CommunityDetailPage() {
         }
       } catch (err) {
         // Table fallback
+      }
+
+      // Try contact_submissions table fallback
+      if (!wLink || !lName) {
+        try {
+          const { data: submissions } = await supabase
+            .from('contact_submissions')
+            .select('message')
+            .ilike('subject', 'Community Application:%');
+
+          if (submissions) {
+            for (const sub of submissions) {
+              try {
+                const parsed = JSON.parse(sub.message);
+                const isMatch =
+                  parsed.community_id === comm.id ||
+                  (parsed.community_name && parsed.community_name.toLowerCase() === comm.name.toLowerCase()) ||
+                  (parsed.college_full_name && comm.college?.name && parsed.college_full_name.toLowerCase() === comm.college.name.toLowerCase());
+
+                if (isMatch) {
+                  if (!wLink && parsed.whatsapp_link) wLink = parsed.whatsapp_link;
+                  if (!lName && parsed.leader_name) lName = parsed.leader_name;
+                  break;
+                }
+              } catch {
+                // Not JSON
+              }
+            }
+          }
+        } catch (err) {
+          // Ignore fallback errors
+        }
       }
 
       setLeadName(lName);
@@ -125,6 +159,15 @@ export default function CommunityDetailPage() {
     loadData();
   }, [id, supabase, router]);
 
+  const [copiedLink, setCopiedLink] = useState(false);
+  const handleCopyLink = (linkToCopy: string) => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(linkToCopy);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2500);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
@@ -137,7 +180,8 @@ export default function CommunityDetailPage() {
 
   const isMember = membership && membership.status === 'approved';
   const isCreator = membership?.role === 'creator';
-  const tabs = ['feed', 'announcements', 'resources', 'events'];
+  const tabs = ['feed', 'announcements', 'members', 'resources', 'events'];
+  const activeWhatsappUrl = whatsappLink || 'https://chat.whatsapp.com/open-engineering';
 
   return (
     <section className="min-h-screen pt-32 pb-20 px-6 max-w-6xl mx-auto space-y-8">
@@ -172,21 +216,89 @@ export default function CommunityDetailPage() {
         </div>
 
         {/* WhatsApp Quick Join Button in Header */}
-        {whatsappLink && (
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2.5 py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all duration-300 shrink-0"
-          >
-            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.892 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.637-1.144 4.175 4.275-1.122.613.377z"/>
-            </svg>
-            <span>Join WhatsApp Group</span>
-          </a>
-        )}
+        <a
+          href={activeWhatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-xs sm:text-sm shadow-md hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 shrink-0"
+        >
+          <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.892 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.637-1.144 4.175 4.275-1.122.613.377z"/>
+          </svg>
+          <span>Join WhatsApp Group</span>
+        </a>
       </div>
 
+      {/* Prominent Dedicated WhatsApp Group Callout Box */}
+      <div className="p-6 sm:p-7 rounded-2xl bg-gradient-to-br from-emerald-950/90 via-slate-900 to-teal-950 text-white border border-emerald-500/30 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+        <div className="absolute -right-10 -bottom-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex items-start gap-4 relative z-10">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shrink-0 text-emerald-400 shadow-inner">
+            <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24">
+              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.892 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.637-1.144 4.175 4.275-1.122.613.377z"/>
+            </svg>
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full border border-emerald-400/30">
+                💬 Campus WhatsApp Hub
+              </span>
+            </div>
+            <h2 className="text-lg sm:text-xl font-bold text-white">
+              Join {community.name} WhatsApp Group
+            </h2>
+            <p className="text-slate-300 text-xs sm:text-sm max-w-xl font-normal leading-relaxed">
+              Connect directly with fellow student engineers, get instant announcements, event updates, study vaults, and project collaborations.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 relative z-10 w-full md:w-auto">
+          <a
+            href={activeWhatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full sm:w-auto py-3 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
+          >
+            <span>Join WhatsApp Group</span>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </a>
+          <button
+            onClick={() => handleCopyLink(activeWhatsappUrl)}
+            className="w-full sm:w-auto py-3 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs inline-flex items-center justify-center gap-2 transition-all cursor-pointer"
+          >
+            {copiedLink ? '✓ Copied!' : 'Copy Link 📋'}
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs Navigation */}
+      <div className="flex border-b border-purple-200/60 overflow-x-auto gap-2">
+        {tabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`py-3 px-5 font-bold text-xs sm:text-sm capitalize transition-colors border-b-2 whitespace-nowrap cursor-pointer ${
+              activeTab === tab
+                ? 'border-purple-700 text-purple-700 bg-purple-50/50 rounded-t-xl'
+                : 'border-transparent text-slate-600 hover:text-purple-700'
+            }`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      <div className="pt-2">
+        {activeTab === 'feed' && <FeedTab communityId={community.id} userId={userId || ''} />}
+        {activeTab === 'announcements' && <AnnouncementsTab communityId={community.id} userId={userId || ''} isCreator={isCreator} />}
+        {activeTab === 'members' && <MembersTab communityId={community.id} />}
+        {activeTab === 'resources' && <ResourcesTab communityId={community.id} userId={userId || ''} />}
+        {activeTab === 'events' && <EventsTab communityId={community.id} userId={userId || ''} isCreator={isCreator} />}
+      </div>
     </section>
   );
 }

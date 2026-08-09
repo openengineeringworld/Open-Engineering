@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS public.community_applications (
     leader_phone TEXT NOT NULL,
     whatsapp_link TEXT NOT NULL,
     additional_notes TEXT,
+    password TEXT,
     status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

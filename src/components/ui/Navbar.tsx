@@ -28,6 +28,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [communityDropdownOpen, setCommunityDropdownOpen] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -39,6 +40,7 @@ export default function Navbar() {
   useEffect(() => {
     setMobileOpen(false);
     setDropdownOpen(false);
+    setCommunityDropdownOpen(false);
   }, [pathname]);
 
   const isActive = (href: string) => {
@@ -48,7 +50,7 @@ export default function Navbar() {
 
   const isCommunityRoute = pathname?.startsWith('/community');
 
-  if (pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin')) {
+  if (pathname?.startsWith('/admin')) {
     return null;
   }
 
@@ -145,12 +147,62 @@ export default function Navbar() {
           {/* Action Button & Mobile Hamburger Toggle */}
           <div className="flex items-center gap-2.5">
             {isCommunityRoute && (
-              <Link
-                href="/community/create"
-                className="hidden sm:inline-flex py-2.5 px-5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm shadow-[3px_3px_12px_rgba(0,0,0,0.25),-3px_-3px_12px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all whitespace-nowrap"
+              <div
+                className="relative hidden sm:block"
+                onMouseEnter={() => setCommunityDropdownOpen(true)}
+                onMouseLeave={() => setCommunityDropdownOpen(false)}
               >
-                Create your community
-              </Link>
+                <button
+                  onClick={() => setCommunityDropdownOpen(!communityDropdownOpen)}
+                  className="py-2.5 px-5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm shadow-[3px_3px_12px_rgba(0,0,0,0.25),-3px_-3px_12px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all whitespace-nowrap flex items-center gap-2"
+                >
+                  <span>Your Community</span>
+                  <svg
+                    className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                      communityDropdownOpen ? 'rotate-180 text-purple-300' : ''
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                <AnimatePresence>
+                  {communityDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute top-full right-0 mt-2.5 w-56 rounded-2xl bg-white/95 backdrop-blur-lg border border-purple-200/50 p-2 shadow-[0_10px_28px_rgba(147,51,234,0.15),-6px_-6px_20px_#ffffff] z-50"
+                    >
+                      <Link
+                        href="/community/create"
+                        onClick={() => setCommunityDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-800 hover:text-purple-950 hover:bg-purple-50/80 transition-all"
+                      >
+                        <svg className="w-4 h-4 text-purple-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                        <span>Create your community</span>
+                      </Link>
+                      <Link
+                        href="/community/dashboard"
+                        onClick={() => setCommunityDropdownOpen(false)}
+                        className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-slate-800 hover:text-purple-950 hover:bg-purple-50/80 transition-all mt-1"
+                      >
+                        <svg className="w-4 h-4 text-purple-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>Manage your community</span>
+                      </Link>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             )}
 
             {/* Mobile Hamburger Toggle */}
@@ -254,14 +306,30 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* 3D Neumorphic Drawer Footer Action Button */}
+              {/* 3D Neumorphic Drawer Footer Action Buttons */}
               {isCommunityRoute && (
-                <div className="pt-4 border-t border-purple-200/40 mt-auto space-y-2.5 shrink-0">
+                <div className="pt-4 border-t border-purple-200/40 mt-auto space-y-2 shrink-0">
+                  <p className="px-1 text-[11px] font-black text-purple-700 uppercase tracking-wider">Your Community</p>
                   <Link
                     href="/community/create"
-                    className="w-full py-3.5 rounded-2xl bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-xs text-center block shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] transition-all"
+                    onClick={() => setMobileOpen(false)}
+                    className="w-full py-3 rounded-2xl bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-xs text-center flex items-center justify-center gap-2 shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] transition-all"
                   >
+                    <svg className="w-4 h-4 text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
                     Create your community
+                  </Link>
+                  <Link
+                    href="/community/dashboard"
+                    onClick={() => setMobileOpen(false)}
+                    className="w-full py-3 rounded-2xl bg-purple-100 hover:bg-purple-200 text-purple-950 font-extrabold text-xs text-center flex items-center justify-center gap-2 border border-purple-300/60 shadow-sm transition-all"
+                  >
+                    <svg className="w-4 h-4 text-purple-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Manage your community
                   </Link>
                 </div>
               )}

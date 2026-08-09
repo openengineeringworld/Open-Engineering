@@ -3,92 +3,100 @@
 import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
 
 function CommunityLoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/community/dashboard';
+  const redirectUrl = searchParams.get('redirect') || '/community/dashboard';
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError('');
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+    try {
+      const response = await fetch('/api/community/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const supabase = createClient();
+      const data = await response.json();
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (signInError) {
-      setError(signInError.message);
-      setLoading(false);
-      return;
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_profile_complete')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (profile && !profile.is_profile_complete) {
-        router.push('/onboarding');
-      } else {
-        router.push(redirect);
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to sign in. Please check your credentials.');
       }
-    } else {
-      router.push(redirect);
+
+      router.push(redirectUrl);
+      router.refresh();
+    } catch (err: any) {
+      setError(err?.message || 'Invalid email or password.');
+      setLoading(false);
     }
-    router.refresh();
   }
 
   return (
-    <section className="section pt-36 pb-24">
-      <div className="container mx-auto px-6 max-w-md">
+    <section className="min-h-screen pt-36 pb-24 bg-[#eef0f8]">
+      <div className="container mx-auto px-4 sm:px-6 max-w-md">
+        
+        {/* Header */}
         <div className="text-center mb-8">
           <Link
             href="/community"
-            className="inline-flex items-center gap-2 text-xs font-extrabold text-purple-700 hover:underline mb-4"
+            className="inline-flex items-center gap-2 text-xs font-extrabold text-purple-700 hover:text-purple-900 transition-colors mb-4 neu-flat px-4 py-2 rounded-full"
           >
-            ← Back to Community
+            ← Back to Communities
           </Link>
-          <span className="badge badge-primary mb-3">College Ambassador</span>
-          <h1 className="text-3xl font-extrabold mb-2">Ambassador Sign In</h1>
-          <p className="text-text-muted text-xs sm:text-sm font-normal">
-            Sign in to manage your campus chapter & access your ambassador dashboard.
+          <span className="badge badge-primary block mx-auto w-max mb-3 px-3.5 py-1 text-xs font-extrabold shadow-sm">
+            ⚡ Community Ambassador Portal
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-black text-slate-950 tracking-tight mb-2">
+            Ambassador Sign In
+          </h1>
+          <p className="text-slate-600 text-xs sm:text-sm font-medium leading-relaxed">
+            Enter the email and password you created during your community application form fillup.
           </p>
         </div>
 
-        <div className="neu-card p-8 border border-purple-300/40 shadow-[8px_8px_20px_rgba(147,51,234,0.12),-8px_-8px_20px_#ffffff]">
+        {/* Card */}
+        <div className="neu-card p-6 sm:p-8 border border-purple-300/60 shadow-[10px_10px_25px_rgba(147,51,234,0.14),-10px_-10px_25px_#ffffff]">
+          
+          {error && (
+            <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-700 text-xs font-extrabold flex items-start gap-2.5 shadow-sm">
+              <svg className="w-5 h-5 shrink-0 fill-current text-rose-600 mt-0.5" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <span>{error}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Field 1: Email */}
             <div>
-              <label htmlFor="email" className="block text-xs font-bold text-slate-700 mb-2">
-                Email Address
+              <label htmlFor="email" className="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">
+                Ambassador Email *
               </label>
               <input
                 id="email"
                 name="email"
                 type="email"
                 required
-                className="neu-input"
-                placeholder="ambassador@college.edu"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
+                placeholder="e.g. rahul@example.com"
               />
             </div>
+
+            {/* Field 2: Password */}
             <div>
-              <label htmlFor="password" className="block text-xs font-bold text-slate-700 mb-2">
-                Password
+              <label htmlFor="password" className="block text-xs font-black text-slate-800 uppercase tracking-wider mb-2">
+                Password *
               </label>
               <div className="relative">
                 <input
@@ -96,13 +104,15 @@ function CommunityLoginForm() {
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="neu-input !pr-12"
-                  placeholder="Enter password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium !pr-16"
+                  placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-purple-700 font-bold text-xs transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 px-2.5 py-1 text-slate-500 hover:text-purple-700 font-extrabold text-[11px] uppercase transition-colors"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? 'Hide' : 'Show'}
@@ -110,31 +120,35 @@ function CommunityLoginForm() {
               </div>
             </div>
 
-            <div className="flex justify-end">
-              <Link href="/forgot-password" className="text-purple-700 text-xs font-bold hover:underline">
-                Forgot Password?
-              </Link>
-            </div>
-
-            {error && <p className="text-rose-600 text-xs font-bold text-center">{error}</p>}
-
             <button
               type="submit"
               disabled={loading}
-              className="btn btn-primary w-full py-3.5 shadow-[4px_4px_14px_rgba(147,51,234,0.25)] hover:scale-[1.01] active:scale-[0.99] transition-all"
+              className="w-full py-4 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-black text-xs sm:text-sm shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-4 cursor-pointer"
             >
-              {loading ? 'Signing In...' : 'Sign In to Dashboard ⚡'}
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <span>Authenticating Ambassador...</span>
+                </div>
+              ) : (
+                <span>Sign In to Dashboard ⚡</span>
+              )}
             </button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-purple-200/40 text-center">
-            <p className="text-text-muted text-xs font-medium">
-              Want to launch or join a campus chapter?{' '}
-              <Link href="/community/signup" className="text-purple-700 hover:underline font-extrabold">
-                Sign Up / Join Chapter
-              </Link>
+          {/* Footer note */}
+          <div className="mt-8 pt-6 border-t border-purple-200/40 text-center space-y-2">
+            <p className="text-slate-600 text-xs font-medium">
+              Haven&apos;t registered your campus chapter yet?
             </p>
+            <Link
+              href="/community/create"
+              className="inline-block text-purple-700 hover:text-purple-900 font-extrabold text-xs underline underline-offset-4 transition-colors"
+            >
+              Fill out Community Application Form →
+            </Link>
           </div>
+
         </div>
       </div>
     </section>
@@ -143,7 +157,7 @@ function CommunityLoginForm() {
 
 export default function CommunityLoginPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-20"><div className="loading-spinner" /></div>}>
+    <Suspense fallback={<div className="flex justify-center py-32"><div className="loading-spinner" /></div>}>
       <CommunityLoginForm />
     </Suspense>
   );

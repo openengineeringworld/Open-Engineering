@@ -133,6 +133,7 @@ export type CommunityApplication = {
   leader_phone: string;
   whatsapp_link: string;
   additional_notes?: string | null;
+  password?: string | null;
   status?: string;
   created_at: string;
 };
