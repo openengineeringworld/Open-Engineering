@@ -201,7 +201,7 @@ export default function AboutPage() {
                 Join student engineers across colleges in India who learn, collaborate, and build real solutions together.
               </p>
               <Link
-                href="/community/join"
+                href="/community/search"
                 className="py-4 px-8 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm sm:text-base inline-flex items-center justify-center gap-2 shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] hover:shadow-[6px_6px_18px_rgba(0,0,0,0.5),-6px_-6px_18px_#ffffff] hover:scale-[1.02] active:scale-[0.98] transition-all group/btn"
               >
                 <span>Join Community Now</span>

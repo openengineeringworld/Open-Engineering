@@ -73,7 +73,7 @@ export function PendingMemberView({ userId, membershipId, communityName }: { use
           if (payload.eventType === 'UPDATE' && payload.new && (payload.new as any).status === 'approved') {
             router.refresh();
           } else if (payload.eventType === 'DELETE') {
-            router.push('/community/join');
+            router.push('/community/search');
             router.refresh();
           }
         }
@@ -97,7 +97,7 @@ export function PendingMemberView({ userId, membershipId, communityName }: { use
       alert(error.message);
       setCancelling(false);
     } else {
-      router.push('/community/join');
+      router.push('/community/search');
       router.refresh();
     }
   }

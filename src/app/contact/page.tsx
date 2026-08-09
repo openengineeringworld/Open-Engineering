@@ -16,24 +16,47 @@ export default function ContactPage() {
 
     const form = e.currentTarget;
     const formData = new FormData(form);
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const subject = formData.get('subject') as string;
+    const message = formData.get('message') as string;
 
-    const supabase = createClient();
-    const { error: insertError } = await supabase.from('contact_submissions').insert({
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      subject: formData.get('subject') as string,
-      message: formData.get('message') as string,
-    });
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, subject, message }),
+      });
 
-    setLoading(false);
+      const data = await res.json();
 
-    if (insertError) {
-      setError('Something went wrong. Please try again.');
-      return;
+      if (!res.ok) {
+        throw new Error(data.error || 'Something went wrong. Please try again.');
+      }
+
+      setSuccess(true);
+      form.reset();
+    } catch (err: any) {
+      console.error('Contact submission error:', err);
+      // Fallback attempt with direct client insert if API route fails
+      try {
+        const supabase = createClient();
+        const { error: insertError } = await supabase.from('contact_submissions').insert({
+          name,
+          email,
+          subject,
+          message,
+        });
+
+        if (insertError) throw insertError;
+        setSuccess(true);
+        form.reset();
+      } catch (fallbackErr: any) {
+        setError(err.message || 'Something went wrong. Please try again.');
+      }
+    } finally {
+      setLoading(false);
     }
-
-    setSuccess(true);
-    form.reset();
   }
 
   return (

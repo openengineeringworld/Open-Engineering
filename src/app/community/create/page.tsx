@@ -1,456 +1,432 @@
 'use client';
 
-import { useState, useEffect, useMemo, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import type { College, Community } from '@/types/database';
 
-function CreateCommunityForm() {
-  const [colleges, setColleges] = useState<(College & { community?: Community })[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
+export default function CreateCommunityPage() {
+  const [shortName, setShortName] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [userId, setUserId] = useState<string | null>(null);
 
   // Form states
-  const [selectedDistrict, setSelectedDistrict] = useState('');
-  const [selectedCollegeId, setSelectedCollegeId] = useState('');
-  const [communityName, setCommunityName] = useState('');
-  const [description, setDescription] = useState('');
-  const [isCustomCollege, setIsCustomCollege] = useState(false);
+  const [collegeFullName, setCollegeFullName] = useState('');
+  const [leaderName, setLeaderName] = useState('');
+  const [leaderEmail, setLeaderEmail] = useState('');
+  const [leaderPhone, setLeaderPhone] = useState('');
+  const [whatsappLink, setWhatsappLink] = useState('');
+  const [additionalNotes, setAdditionalNotes] = useState('');
 
-  // Custom college inputs
-  const [customCollegeName, setCustomCollegeName] = useState('');
-  const [customCity, setCustomCity] = useState('');
-  const [customState, setCustomState] = useState('');
-  const [customDistrict, setCustomDistrict] = useState('');
+  const calculatedCommunityName = shortName.trim()
+    ? `Open Engineering ${shortName.trim().toUpperCase()}`
+    : 'Open Engineering [College Short Form]';
 
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const supabase = createClient();
-
-  // Query parameters pre-selection
-  useEffect(() => {
-    const queryDistrict = searchParams.get('district');
-    const queryCollegeId = searchParams.get('collegeId');
-    if (queryDistrict) setSelectedDistrict(queryDistrict);
-    if (queryCollegeId) setSelectedCollegeId(queryCollegeId);
-  }, [searchParams]);
-
-  useEffect(() => {
-    async function init() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        router.push('/community/signup?redirect=/community/create');
-        return;
-      }
-      setUserId(user.id);
-
-      // Check if already in a community
-      const { data: membership } = await supabase
-        .from('community_members')
-        .select('*, community:communities(*)')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (membership) {
-        router.push('/dashboard/my-community');
-        return;
-      }
-
-      await loadColleges();
-    }
-    init();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function loadColleges() {
-    setLoading(true);
-    const { data } = await supabase
-      .from('colleges')
-      .select('*, community:communities(*)')
-      .order('name');
-
-    if (data) {
-      const mapped = data.map((c) => ({
-        ...c,
-        community: Array.isArray(c.community) ? c.community[0] : c.community,
-      }));
-      setColleges(mapped);
-    }
-    setLoading(false);
-  }
-
-  // Extract unique districts
-  const districts = useMemo(() => {
-    const distSet = new Set<string>();
-    colleges.forEach((c) => {
-      const d = c.district;
-      if (d) distSet.add(d);
-    });
-    return Array.from(distSet).sort();
-  }, [colleges]);
-
-  // Filter colleges based on district
-  const filteredColleges = useMemo(() => {
-    if (!selectedDistrict) return [];
-    return colleges.filter((c) => c.district === selectedDistrict);
-  }, [colleges, selectedDistrict]);
-
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userId) return;
-    setSubmitting(true);
+    setLoading(true);
     setError('');
-    setSuccess('');
 
     try {
-      let collegeId = selectedCollegeId;
-      let community: Community | null = null;
+      const response = await fetch('/api/community/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          collegeFullName,
+          shortName,
+          leaderName,
+          leaderEmail,
+          leaderPhone,
+          whatsappLink,
+          additionalNotes
+        })
+      });
 
-      if (isCustomCollege) {
-        // 1. Validate custom college inputs
-        if (!customCollegeName.trim() || !customCity.trim() || !customState.trim() || !customDistrict.trim()) {
-          throw new Error('Please fill in all custom college fields.');
-        }
+      const data = await response.json();
 
-        // 2. Insert new college (trigger automatically creates community)
-        const { data: newCollege, error: collegeError } = await supabase
-          .from('colleges')
-          .insert({
-            name: customCollegeName.trim(),
-            city: customCity.trim(),
-            state: customState.trim(),
-            district: customDistrict.trim(),
-            added_by: userId,
-          })
-          .select()
-          .single();
-
-        if (collegeError) {
-          if (collegeError.code === '23505') {
-            throw new Error('This college already exists in our database.');
-          }
-          throw new Error(collegeError.message);
-        }
-
-        collegeId = newCollege.id;
-
-        // 3. Fetch the automatically created community
-        const { data: autoComm, error: commFetchError } = await supabase
-          .from('communities')
-          .select('*')
-          .eq('college_id', collegeId)
-          .single();
-
-        if (commFetchError || !autoComm) {
-          throw new Error('Failed to retrieve the launched community chapter.');
-        }
-
-        community = autoComm;
-      } else {
-        // Validation for existing college selection
-        if (!collegeId) {
-          throw new Error('Please select a college.');
-        }
-
-        const { data: existingComm } = await supabase
-          .from('communities')
-          .select('*')
-          .eq('college_id', collegeId)
-          .maybeSingle();
-
-        if (existingComm) {
-          throw new Error('A community chapter has already been launched for this college. Please go to the Join Community page to request access instead.');
-        }
-
-        const selectedCol = colleges.find((c) => c.id === collegeId);
-        const colName = selectedCol ? selectedCol.name : 'College';
-        const { data: newComm, error: commError } = await supabase
-          .from('communities')
-          .insert({
-            college_id: collegeId,
-            name: communityName.trim() || `${colName} Chapter`,
-            description: description.trim() || 'Welcome to the campus chapter! Connect with fellow engineers.',
-            status: 'pending'
-          })
-          .select()
-          .single();
-
-        if (commError || !newComm) {
-          throw new Error(commError?.message || 'Failed to create community chapter.');
-        }
-        community = newComm;
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit community application.');
       }
 
-      if (!community) {
-        throw new Error('Community chapter could not be found.');
-      }
-
-      // 4. Verify if the community already has an active creator/admin
-      const { data: existingCreator } = await supabase
-        .from('community_members')
-        .select('id')
-        .eq('community_id', community.id)
-        .eq('role', 'creator')
-        .maybeSingle();
-
-      if (existingCreator) {
-        throw new Error('This college community already has an active Campus Admin. Please go to the Join Community page to request access instead.');
-      }
-
-      // 5. Update community status to pending (for global admin approval) and update description if provided
-      const updateData: any = { status: 'pending' };
-      if (communityName.trim()) updateData.name = communityName.trim();
-      if (description.trim()) updateData.description = description.trim();
-
-      const { error: updateError } = await supabase
-        .from('communities')
-        .update(updateData)
-        .eq('id', community.id);
-
-      if (updateError) {
-        throw new Error(updateError.message);
-      }
-
-      // 6. Join user to community_members as 'creator' (approved immediately so they can manage it)
-      const { error: joinError } = await supabase
-        .from('community_members')
-        .insert({
-          user_id: userId,
-          community_id: community.id,
-          role: 'creator',
-          status: 'approved',
-        });
-
-      if (joinError) {
-        throw new Error(joinError.message);
-      }
-
-      // 7. Update user profile college_id
-      await supabase
-        .from('profiles')
-        .update({ college_id: collegeId })
-        .eq('id', userId);
-
-      setSuccess('Your campus community chapter has been successfully launched! It is awaiting Open Engineering Admin verification, but you are now registered as the Campus Creator & Admin.');
-      
-      setTimeout(() => {
-        router.push('/dashboard/my-community');
-        router.refresh();
-      }, 3000);
+      setLoading(false);
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
-      setError(err.message || 'An error occurred while launching the community.');
-      setSubmitting(false);
+      console.error('Failed to submit application:', err);
+      setError(err?.message || 'Failed to submit application. Please try again.');
+      setLoading(false);
     }
-  }
+  };
+
 
   return (
-    <section className="section pt-36 pb-24">
-      <div className="container mx-auto px-6 max-w-2xl">
+    <div className="min-h-screen pt-32 pb-24 bg-[#eef0f8]">
+      <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
+        
+        {/* Navigation / Header */}
         <div className="text-center mb-10">
           <Link
             href="/community"
-            className="inline-flex items-center gap-2 text-xs font-extrabold text-purple-700 hover:underline mb-4"
+            className="inline-flex items-center gap-2 text-xs font-extrabold text-purple-700 hover:text-purple-900 transition-colors mb-4 neu-flat px-4 py-2 rounded-full"
           >
             ← Back to Communities
           </Link>
-          <span className="badge badge-primary mb-3">Launch Chapter</span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
-            Pioneer Your Campus <span className="gradient-text">Chapter</span>
+          <span className="badge badge-primary block mx-auto w-max mb-3 px-4 py-1 text-xs font-bold shadow-sm">
+            ⚡ Start Your Campus Chapter
+          </span>
+          <h1 className="text-3xl sm:text-5xl font-black text-slate-950 tracking-tight mb-4">
+            How to Start an <span className="gradient-text">Open Engineering</span> Community
           </h1>
-          <p className="text-text-muted text-sm font-normal">
-            Select your college to claim admin rights, or register a new one to go live.
+          <p className="text-slate-600 text-sm sm:text-base font-medium max-w-2xl mx-auto">
+            Follow the simple step-by-step instructions below to establish an official Open Engineering chapter at your college!
           </p>
         </div>
 
-        {success && (
-          <div className="neu-card p-6 text-center mb-8 border border-purple-300/60 shadow-[8px_8px_20px_rgba(147,51,234,0.14),-8px_-8px_20px_#ffffff]">
-            <div className="w-14 h-14 neu-convex rounded-2xl flex items-center justify-center text-purple-700 mx-auto mb-3 border border-white/80 shadow-sm animate-bounce">
-              ⚡
+        {/* Post-Submission Message Card */}
+        {submitted ? (
+          <div className="neu-card p-8 sm:p-12 text-center max-w-2xl mx-auto border border-emerald-300/80 bg-gradient-to-b from-white to-[#f0fdf4] shadow-[10px_10px_25px_rgba(16,185,129,0.15),-10px_-10px_25px_#ffffff] animate-fadeIn">
+            <div className="w-20 h-20 rounded-full bg-emerald-100 border-4 border-emerald-500/20 text-emerald-600 flex items-center justify-center mx-auto mb-6 shadow-inner">
+              <svg className="w-10 h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
             </div>
-            <h3 className="text-xl font-extrabold text-slate-950 mb-2">Campus Chapter Launched!</h3>
-            <p className="text-slate-700 text-xs sm:text-sm font-medium leading-relaxed max-w-md mx-auto">
-              {success}
-            </p>
-          </div>
-        )}
-
-        {error && (
-          <div className="neu-card p-4 text-center mb-6 border border-rose-300 bg-rose-50/50">
-            <p className="text-rose-900 text-xs font-bold">{error}</p>
-          </div>
-        )}
-
-        {!success && (
-          <form onSubmit={handleSubmit} className="space-y-6 neu-card p-6 sm:p-8 border border-purple-300/40 shadow-[8px_8px_20px_rgba(147,51,234,0.12),-8px_-8px_20px_#ffffff]">
             
-            {/* Toggle College Type */}
-            <div className="flex items-center justify-between pb-4 border-b border-purple-200/30">
-              <span className="text-sm font-extrabold text-slate-950">Is your college registered in our system?</span>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mb-4">
+              Application Submitted Successfully!
+            </h2>
+            
+            <div className="p-4 sm:p-6 neu-pressed rounded-2xl mb-8 bg-emerald-50/50 border border-emerald-200/60">
+              <p className="text-emerald-950 text-base sm:text-lg font-bold leading-relaxed">
+                Your details are delivered to our team, we will shortly verify and contact you.
+              </p>
+            </div>
+
+            <div className="text-left neu-flat p-5 rounded-xl mb-8 text-xs sm:text-sm text-slate-700 space-y-2">
+              <div className="font-bold text-slate-900 mb-2 border-b pb-2">Submission Summary</div>
+              <div><span className="font-semibold text-slate-900">College:</span> {collegeFullName || 'Not specified'}</div>
+              <div><span className="font-semibold text-slate-900">Community Name:</span> <span className="font-bold text-purple-700">{calculatedCommunityName}</span></div>
+              <div><span className="font-semibold text-slate-900">Leader:</span> {leaderName} ({leaderEmail})</div>
+              {whatsappLink && <div><span className="font-semibold text-slate-900">WhatsApp Group:</span> <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="text-purple-700 underline font-medium">{whatsappLink}</a></div>}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/community"
+                className="py-3 px-6 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-sm shadow-md transition-all"
+              >
+                Back to All Communities
+              </Link>
               <button
                 type="button"
-                onClick={() => {
-                  setIsCustomCollege(!isCustomCollege);
-                  setError('');
-                }}
-                className="text-xs font-bold text-purple-700 hover:text-purple-900 transition-colors underline"
+                onClick={() => setSubmitted(false)}
+                className="py-3 px-6 rounded-xl neu-flat hover:bg-slate-200 text-slate-800 font-bold text-sm transition-all"
               >
-                {isCustomCollege ? 'Select from Registered List' : 'Register New College'}
+                Submit Another Application
               </button>
             </div>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            
+            {/* Step-by-Step Instructions Grid */}
+            <div className="space-y-6">
+              
+              {/* Step 1: Form a Team */}
+              <div className="neu-card p-6 sm:p-8 flex flex-col sm:flex-row items-start gap-6 relative overflow-hidden border border-purple-200/50">
+                <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white font-black text-xl flex items-center justify-center shrink-0 shadow-lg shadow-purple-600/30">
+                  1
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+                    Form a Core Team
+                  </h3>
+                  <p className="text-slate-600 text-sm font-normal leading-relaxed">
+                    Form a team of passionate student leaders, coordinators, and tech enthusiasts who will run and manage the official <strong className="text-slate-900">Open Engineering</strong> community at your college.
+                  </p>
+                </div>
+              </div>
 
-            {!isCustomCollege ? (
-              <>
-                {/* District Dropdown */}
-                <div>
-                  <label htmlFor="district" className="block text-xs font-bold text-slate-700 mb-1.5">
-                    1. Select District
-                  </label>
-                  {loading ? (
-                    <div className="skeleton h-11 rounded-xl" />
-                  ) : (
-                    <select
-                      id="district"
-                      value={selectedDistrict}
-                      onChange={(e) => {
-                        setSelectedDistrict(e.target.value);
-                        setSelectedCollegeId('');
-                      }}
-                      required
-                      className="neu-input px-4 py-3 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full font-medium"
+              {/* Step 2: Community Naming Format */}
+              <div className="neu-card p-6 sm:p-8 flex flex-col sm:flex-row items-start gap-6 relative overflow-hidden border border-purple-200/50">
+                <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white font-black text-xl flex items-center justify-center shrink-0 shadow-lg shadow-purple-600/30">
+                  2
+                </div>
+                <div className="flex-1 w-full">
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">
+                    Set Community Name
+                  </h3>
+                  <p className="text-slate-600 text-sm font-normal mb-4">
+                    Your community name must follow the format: <strong className="text-slate-900 font-extrabold">"Open Engineering" + "Your College Name in short form"</strong>
+                  </p>
+                  
+                  <div className="pt-1">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2.5">Examples of Community Names:</span>
+                    <div className="flex flex-wrap gap-2.5">
+                      <span className="font-extrabold text-purple-700 neu-flat px-3.5 py-1.5 rounded-lg bg-purple-50 text-xs sm:text-sm">
+                        Open Engineering AEC
+                      </span>
+                      <span className="font-extrabold text-purple-700 neu-flat px-3.5 py-1.5 rounded-lg bg-purple-50 text-xs sm:text-sm">
+                        Open Engineering JEC
+                      </span>
+                      <span className="font-extrabold text-purple-700 neu-flat px-3.5 py-1.5 rounded-lg bg-purple-50 text-xs sm:text-sm">
+                        Open Engineering IITG
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step 3: Download Logo */}
+              <div className="neu-card p-6 sm:p-8 flex flex-col sm:flex-row items-start gap-6 relative overflow-hidden border border-purple-200/50">
+                <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white font-black text-xl flex items-center justify-center shrink-0 shadow-lg shadow-purple-600/30">
+                  3
+                </div>
+                <div className="flex-1 w-full">
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">
+                    Download Open Engineering Logo
+                  </h3>
+                  <p className="text-slate-600 text-sm font-normal mb-4">
+                    Download the official logo below to use as your WhatsApp group icon and social media branding.
+                  </p>
+                  
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl neu-pressed p-1.5 bg-white border border-purple-100 shrink-0 flex items-center justify-center">
+                      <img src="/logo.png" alt="Open Engineering Logo" className="w-full h-full object-contain" />
+                    </div>
+                    <a
+                      href="/logo.png"
+                      download="Open_Engineering_Logo.png"
+                      className="inline-flex items-center gap-2 py-3 px-6 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs sm:text-sm shadow-md transition-all"
                     >
-                      <option value="">-- Choose District --</option>
-                      {districts.map((d) => (
-                        <option key={d} value={d}>
-                          {d}
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      Download Logo
+                    </a>
+                  </div>
                 </div>
+              </div>
 
-                {/* College Dropdown */}
-                {selectedDistrict && (
-                  <div>
-                    <label htmlFor="college" className="block text-xs font-bold text-slate-700 mb-1.5">
-                      2. Select Your College
-                    </label>
-                    <select
-                      id="college"
-                      value={selectedCollegeId}
-                      onChange={(e) => setSelectedCollegeId(e.target.value)}
-                      required
-                      className="neu-input px-4 py-3 text-xs sm:text-sm border border-purple-200/60 text-slate-900 bg-[#eef0f8] w-full font-medium"
+              {/* Step 4: Create WhatsApp Group */}
+              <div className="neu-card p-6 sm:p-8 flex flex-col sm:flex-row items-start gap-6 relative overflow-hidden border border-purple-200/50">
+                <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white font-black text-xl flex items-center justify-center shrink-0 shadow-lg shadow-purple-600/30">
+                  4
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+                    Create a WhatsApp Group
+                  </h3>
+                  <p className="text-slate-600 text-sm font-normal leading-relaxed mb-3">
+                    Create a WhatsApp group or community for your college engineers. Set the group name following the format (e.g., <strong className="text-purple-700">Open Engineering AEC</strong>, <strong className="text-purple-700">Open Engineering JEC</strong>) and set the downloaded Open Engineering logo as the group avatar icon.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 5: Follow Us on Social Media */}
+              <div className="neu-card p-6 sm:p-8 flex flex-col sm:flex-row items-start gap-6 relative overflow-hidden border border-purple-200/50">
+                <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white font-black text-xl flex items-center justify-center shrink-0 shadow-lg shadow-purple-600/30">
+                  5
+                </div>
+                <div className="flex-1 w-full">
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">
+                    Follow Us on Instagram & LinkedIn
+                  </h3>
+                  <p className="text-slate-600 text-sm font-normal mb-4">
+                    Follow our official pages to connect with the national ecosystem and get updates on hackathons and resources:
+                  </p>
+
+                  <div className="flex flex-wrap gap-4">
+                    <a
+                      href="https://www.instagram.com/openengineeringworld"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 min-w-[200px] py-3 px-5 rounded-xl bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md hover:opacity-95 transition-all"
                     >
-                      <option value="">-- Choose College --</option>
-                      {filteredColleges.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-              </>
-            ) : (
-              /* Custom College Registration Inputs */
-              <div className="space-y-4 pt-2">
-                <span className="badge badge-warning text-[10px]">Pioneering a New College</span>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">College Full Name</label>
-                  <input
-                    type="text"
-                    value={customCollegeName}
-                    onChange={(e) => setCustomCollegeName(e.target.value)}
-                    required
-                    className="neu-input px-4 py-3 text-xs"
-                    placeholder="e.g., Indian Institute of Technology Guwahati"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">City</label>
-                    <input
-                      type="text"
-                      value={customCity}
-                      onChange={(e) => setCustomCity(e.target.value)}
-                      required
-                      className="neu-input px-4 py-3 text-xs"
-                      placeholder="e.g., Guwahati"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">State</label>
-                    <input
-                      type="text"
-                      value={customState}
-                      onChange={(e) => setCustomState(e.target.value)}
-                      required
-                      className="neu-input px-4 py-3 text-xs"
-                      placeholder="e.g., Assam"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">District</label>
-                  <input
-                    type="text"
-                    value={customDistrict}
-                    onChange={(e) => setCustomDistrict(e.target.value)}
-                    required
-                    className="neu-input px-4 py-3 text-xs"
-                    placeholder="e.g., Kamrup Rural"
-                  />
-                </div>
-              </div>
-            )}
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                      </svg>
+                      Follow on Instagram
+                    </a>
 
-            {/* Custom Hub details */}
-            <div className="pt-4 border-t border-purple-200/30 space-y-4">
-              <span className="text-xs font-extrabold text-slate-950 block">Community Customization</span>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Community Custom Name (optional)</label>
-                <input
-                  type="text"
-                  value={communityName}
-                  onChange={(e) => setCommunityName(e.target.value)}
-                  className="neu-input px-4 py-3 text-xs"
-                  placeholder="e.g., IITG Tech Society (Default is College Name + Community)"
-                />
+                    <a
+                      href="https://www.linkedin.com/company/openengineeringworld"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 min-w-[200px] py-3 px-5 rounded-xl bg-[#0A66C2] hover:bg-[#084e96] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all"
+                    >
+                      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                      </svg>
+                      Follow on LinkedIn
+                    </a>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">Short Description / Catchphrase (optional)</label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="neu-input px-4 py-3 text-xs resize-none"
-                  rows={2}
-                  placeholder="e.g., The official coding and systems engineering group of IIT Guwahati."
-                />
-              </div>
+
             </div>
 
-            <button
-              type="submit"
-              disabled={submitting || (!isCustomCollege && !selectedCollegeId)}
-              className="w-full py-3.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50"
-            >
-              {submitting ? 'Launching Campus Chapter...' : 'Launch Campus Chapter & Become Admin ⚡'}
-            </button>
-          </form>
+            {/* Step 6: Registration Form */}
+            <div className="neu-card p-6 sm:p-10 border border-purple-300/60 shadow-[8px_8px_22px_rgba(147,51,234,0.12),-8px_-8px_20px_#ffffff]">
+              <div className="text-center mb-8">
+                <span className="badge badge-warning mb-2 text-xs">Step 6 of 6</span>
+                <h2 className="text-2xl sm:text-3xl font-black text-slate-950">
+                  Submit Community Application Form
+                </h2>
+                <p className="text-slate-600 text-xs sm:text-sm font-medium mt-1">
+                  Fill in your details below to register your community chapter with the Open Engineering team.
+                </p>
+              </div>
+
+              {error && (
+                <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm font-bold flex items-center gap-2">
+                  <svg className="w-5 h-5 shrink-0 fill-current" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <label htmlFor="college-full-name" className="block text-xs font-extrabold text-slate-800 mb-1.5">
+                    College Full Name *
+                  </label>
+                  <input
+                    id="college-full-name"
+                    type="text"
+                    required
+                    value={collegeFullName}
+                    onChange={(e) => setCollegeFullName(e.target.value)}
+                    placeholder="e.g. Assam Engineering College"
+                    className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="college-short-name" className="block text-xs font-extrabold text-slate-800 mb-1.5">
+                      College Short Form *
+                    </label>
+                    <input
+                      id="college-short-name"
+                      type="text"
+                      required
+                      value={shortName}
+                      onChange={(e) => setShortName(e.target.value)}
+                      placeholder="e.g. AEC"
+                      className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium uppercase"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-extrabold text-slate-800 mb-1.5">
+                      Assigned Community Name
+                    </label>
+                    <div className="neu-pressed px-4 py-3 text-xs sm:text-sm w-full font-bold text-purple-700 border border-purple-200">
+                      {calculatedCommunityName}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="leader-name" className="block text-xs font-extrabold text-slate-800 mb-1.5">
+                      Lead / Representative Full Name *
+                    </label>
+                    <input
+                      id="leader-name"
+                      type="text"
+                      required
+                      value={leaderName}
+                      onChange={(e) => setLeaderName(e.target.value)}
+                      placeholder="e.g. Rahul Das"
+                      className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="leader-email" className="block text-xs font-extrabold text-slate-800 mb-1.5">
+                      Lead Email Address *
+                    </label>
+                    <input
+                      id="leader-email"
+                      type="email"
+                      required
+                      value={leaderEmail}
+                      onChange={(e) => setLeaderEmail(e.target.value)}
+                      placeholder="rahul@example.com"
+                      className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="leader-phone" className="block text-xs font-extrabold text-slate-800 mb-1.5">
+                      WhatsApp / Phone Number *
+                    </label>
+                    <input
+                      id="leader-phone"
+                      type="tel"
+                      required
+                      value={leaderPhone}
+                      onChange={(e) => setLeaderPhone(e.target.value)}
+                      placeholder="+91 98765 43210"
+                      className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="whatsapp-link" className="block text-xs font-extrabold text-slate-800 mb-1.5">
+                      Created WhatsApp Group Invite Link *
+                    </label>
+                    <input
+                      id="whatsapp-link"
+                      type="url"
+                      required
+                      value={whatsappLink}
+                      onChange={(e) => setWhatsappLink(e.target.value)}
+                      placeholder="https://chat.whatsapp.com/..."
+                      className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="additional-notes" className="block text-xs font-extrabold text-slate-800 mb-1.5">
+                    Core Team Members & Additional Details (Optional)
+                  </label>
+                  <textarea
+                    id="additional-notes"
+                    rows={3}
+                    value={additionalNotes}
+                    onChange={(e) => setAdditionalNotes(e.target.value)}
+                    placeholder="List core team member names, Instagram handle, or any message for the verifying team..."
+                    className="neu-input px-4 py-3 text-xs sm:text-sm w-full font-medium resize-none"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full py-4 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-extrabold text-sm shadow-[4px_4px_14px_rgba(0,0,0,0.35),-4px_-4px_14px_#ffffff] hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-4"
+                >
+                  {loading ? (
+                    <span>Submitting Application...</span>
+                  ) : (
+                    <>
+                      <span>Submit Application Details 🚀</span>
+                    </>
+                  )}
+                </button>
+              </form>
+            </div>
+
+          </div>
         )}
+
       </div>
-    </section>
+    </div>
   );
 }
 
-export default function CreateCommunityPage() {
-  return (
-    <Suspense fallback={<div className="flex justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-700" /></div>}>
-      <CreateCommunityForm />
-    </Suspense>
-  );
-}

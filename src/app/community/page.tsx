@@ -1,12 +1,15 @@
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase/server';
 import FadeIn from '@/components/animations/FadeIn';
 import StaggerChildren, { StaggerItem } from '@/components/animations/StaggerChildren';
 import type { Metadata } from 'next';
+import FeaturedCommunitiesSection from '@/components/community/FeaturedCommunitiesSection';
+import { createClient } from '@/lib/supabase/server';
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Community',
-  description: 'Join college-wise engineering communities. Connect, share, and grow with fellow engineers.',
+  title: 'Open Engineering Community | Connect, Build & Collaborate',
+  description: 'Join the official Open Engineering Community and college campus chapters. Connect with fellow engineers, work on projects, and access study vaults.',
 };
 
 const communityFeatures = [
@@ -58,31 +61,51 @@ const communityFeatures = [
 ];
 
 export default async function CommunityPage() {
+  let initialCommunities: any[] = [];
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from('communities')
+      .select('*, college:colleges(*)')
+      .eq('status', 'approved');
+    if (data) {
+      initialCommunities = data;
+    }
+  } catch (error) {
+    console.error('Failed to load communities:', error);
+  }
+
   return (
     <>
-      {/* Hero */}
+      {/* Hero Section */}
       <section className="section pt-36 pb-12 relative overflow-hidden">
         <div className="container mx-auto px-6 relative z-10">
           <FadeIn className="text-center max-w-3xl mx-auto">
-            <h1 className="text-4xl sm:text-5xl font-extrabold">
-              Your College, Your <span className="gradient-text">Community</span>
+            <span className="badge badge-primary mb-4 px-4 py-1.5 text-xs font-bold shadow-sm inline-flex items-center gap-1.5">
+              <span>⚡</span> Pan-India Ecosystem
+            </span>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight text-slate-950">
+              Welcome to <span className="gradient-text">Open Engineering Community</span>
             </h1>
           </FadeIn>
         </div>
       </section>
+
+      {/* Featured Available Communities Section (Displays 3 featured communities by default, live search filters, link to /community/search) */}
+      <FeaturedCommunitiesSection initialCommunities={initialCommunities} limit={3} />
 
       {/* Community Features */}
       <section className="section-sm pb-20">
         <div className="container mx-auto px-6">
           <FadeIn className="text-center mb-12">
             <h2 className="text-3xl font-extrabold">
-              What You Get in <span className="gradient-text">Community</span>
+              What You Get in <span className="gradient-text">Open Engineering Community</span>
             </h2>
           </FadeIn>
           <StaggerChildren className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {communityFeatures.map((f) => (
               <StaggerItem key={f.title}>
-                <div className="neu-card p-6 text-center h-full border border-purple-300/40 shadow-[6px_6px_16px_rgba(147,51,234,0.12),-6px_-6px_16px_#ffffff] flex flex-col items-center justify-between group">
+                <div className="neu-card p-6 text-center h-full border border-purple-300/40 shadow-[6px_6px_16px_rgba(147,51,234,0.12),-6px_-6px_16px_#ffffff] flex flex-col items-center justify-between group hover:scale-[1.02] transition-all">
                   <div className="w-14 h-14 neu-convex rounded-2xl p-2.5 flex items-center justify-center border border-purple-300/40 shadow-[4px_4px_10px_rgba(147,51,234,0.15),-4px_-4px_10px_#ffffff] mb-4">
                     {f.icon}
                   </div>
@@ -103,7 +126,7 @@ export default async function CommunityPage() {
               Choose Your <span className="gradient-text">Path</span>
             </h2>
             <p className="text-text-muted text-sm font-normal max-w-xl mx-auto">
-              Whether you want to join an existing campus chapter or launch a brand new community for your college — we have you covered.
+              Whether you want to join an existing chapter or launch a brand new community for your college — we have you covered.
             </p>
           </FadeIn>
 
@@ -118,10 +141,13 @@ export default async function CommunityPage() {
                     </svg>
                   </div>
                   <h3 className="text-xl font-extrabold text-slate-950">Join Campus Chapter</h3>
+                  <p className="text-text-muted text-sm leading-relaxed font-normal">
+                    Search and select your college community to request instant membership and unlock college feeds and vaults.
+                  </p>
                 </div>
                 <div className="mt-8 pt-4 border-t border-purple-200/40">
                   <Link
-                    href="/community/join"
+                    href="/community/search"
                     className="w-full py-3.5 px-5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all"
                   >
                     Search & Join Community →

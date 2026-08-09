@@ -22,8 +22,8 @@ const footerLinks = {
 export default function Footer() {
   const pathname = usePathname();
 
-  // Hide footer on dashboard routes as they have their own layout
-  if (pathname?.startsWith('/dashboard')) {
+  // Hide footer on dashboard and admin routes as they have their own layout
+  if (pathname?.startsWith('/dashboard') || pathname?.startsWith('/admin')) {
     return null;
   }
 

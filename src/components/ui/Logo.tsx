@@ -5,9 +5,10 @@ interface LogoProps {
   showText?: boolean;
   className?: string;
   href?: string;
+  suffix?: string;
 }
 
-export default function Logo({ size = 'md', showText = true, className = '', href = '/' }: LogoProps) {
+export default function Logo({ size = 'md', showText = true, className = '', href = '/', suffix }: LogoProps) {
   const badgeSizes = {
     sm: 'w-10 h-10 p-1.5 rounded-xl',
     md: 'w-12 h-12 p-2 rounded-2xl',
@@ -33,9 +34,16 @@ export default function Logo({ size = 'md', showText = true, className = '', hre
 
       {/* Brand Text */}
       {showText && (
-        <span className={`font-extrabold tracking-tight ${textSizes[size]} text-text group-hover:text-purple-700 transition-colors`}>
-          Open <span className="gradient-text-primary">Engineering</span>
-        </span>
+        <div className="flex flex-col justify-center leading-tight select-none">
+          <span className={`font-extrabold tracking-tight whitespace-nowrap ${textSizes[size]} text-slate-950 group-hover:text-purple-700 transition-colors`}>
+            Open <span className="gradient-text-primary">Engineering</span>
+          </span>
+          {suffix && (
+            <span className="text-[11px] sm:text-xs font-black tracking-widest text-purple-700 uppercase -mt-0.5">
+              {suffix}
+            </span>
+          )}
+        </div>
       )}
     </div>
   );

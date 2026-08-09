@@ -26,11 +26,33 @@ export default function CommunityDetailPage() {
       setLoading(true);
 
       // Fetch community details
-      const { data: comm } = await supabase
+      let { data: comm } = await supabase
         .from('communities')
         .select('*, college:colleges(*)')
         .eq('id', id)
         .single();
+
+      if (!comm && (id === 'open-engineering-community' || id === 'open-engineering-main')) {
+        comm = {
+          id: 'open-engineering-community',
+          college_id: 'open-engineering-central',
+          name: 'Open Engineering Community',
+          description: 'Official flagship central engineering hub connecting student engineers, developers, and campus innovators across all engineering disciplines.',
+          member_count: 5240,
+          created_by: null,
+          status: 'approved',
+          created_at: new Date().toISOString(),
+          college: {
+            id: 'open-engineering-central',
+            name: 'Open Engineering Central Hub',
+            city: 'Pan-India / Online',
+            state: 'India',
+            district: 'Central',
+            added_by: null,
+            created_at: new Date().toISOString()
+          }
+        } as any;
+      }
 
       if (!comm) {
         router.push('/community');

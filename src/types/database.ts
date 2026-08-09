@@ -122,3 +122,35 @@ export type ContactSubmission = {
   message: string;
   created_at: string;
 };
+
+export type CommunityApplication = {
+  id: string;
+  college_full_name: string;
+  college_short_name: string;
+  community_name: string;
+  leader_name: string;
+  leader_email: string;
+  leader_phone: string;
+  whatsapp_link: string;
+  additional_notes?: string | null;
+  status?: string;
+  created_at: string;
+};
+
+export type InternshipApplication = {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  college_name: string;
+  branch?: string | null;
+  year?: string | null;
+  program_id: string;
+  program_title: string;
+  github_url?: string | null;
+  experience_notes?: string | null;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+};
+
+

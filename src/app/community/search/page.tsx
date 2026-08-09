@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import type { College, Community } from '@/types/database';
+import FeaturedCommunitiesSection from '@/components/community/FeaturedCommunitiesSection';
 
-export default function JoinCommunityPage() {
+export default function SearchCommunityPage() {
   const [colleges, setColleges] = useState<(College & { community?: Community })[]>([]);
+  const [approvedCommunities, setApprovedCommunities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -28,18 +30,6 @@ export default function JoinCommunityPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         setUserId(user.id);
-        
-        // If logged in, check if already in a community
-        const { data: membership } = await supabase
-          .from('community_members')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (membership) {
-          router.push('/dashboard/my-community');
-          return;
-        }
       }
 
       await loadColleges();
@@ -50,7 +40,18 @@ export default function JoinCommunityPage() {
 
   async function loadColleges() {
     setLoading(true);
-    // Fetch all colleges and their communities
+    
+    // Fetch all approved communities for the communities explorer grid
+    const { data: commsData } = await supabase
+      .from('communities')
+      .select('*, college:colleges(*)')
+      .eq('status', 'approved');
+
+    if (commsData) {
+      setApprovedCommunities(commsData);
+    }
+
+    // Fetch all colleges and their communities for the join request form
     const { data } = await supabase
       .from('colleges')
       .select('*, community:communities(*)')
@@ -210,22 +211,38 @@ export default function JoinCommunityPage() {
   }
 
   return (
-    <section className="section pt-36 pb-24">
-      <div className="container mx-auto px-6 max-w-2xl">
-        <div className="text-center mb-10">
+    <div className="pt-32 pb-24">
+      {/* Top Header */}
+      <div className="container mx-auto px-6 max-w-6xl mb-6">
+        <div className="flex flex-col items-start mb-6">
           <Link
             href="/community"
             className="inline-flex items-center gap-2 text-xs font-extrabold text-purple-700 hover:underline mb-4"
           >
-            ← Back to Communities
+            ← Back to Communities Overview
           </Link>
-          <br />
-          <span className="badge badge-primary mb-3">Campus Chapter</span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold mb-3">
-            Join College <span className="gradient-text">Community</span>
+          <span className="badge badge-primary mb-3">All Campus Chapters</span>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-950 tracking-tight">
+            Explore All <span className="gradient-text">Communities</span>
           </h1>
-          <p className="text-text-muted text-sm font-normal">
-            Select your college and request access to join the student engineering chapter.
+          <p className="text-text-muted text-sm font-normal mt-2 max-w-2xl">
+            Browse all verified student campus chapters, search by college or district, and request access to join your official chapter.
+          </p>
+        </div>
+      </div>
+
+      {/* Featured Communities Explorer Grid (Shows ALL approved communities) */}
+      <FeaturedCommunitiesSection initialCommunities={approvedCommunities} showDistrictFilter={true} />
+
+      {/* Join Request Form Section */}
+      <div className="container mx-auto px-6 max-w-2xl mt-12" id="join-chapter">
+        <div className="text-center mb-8">
+          <span className="badge badge-primary mb-2">Request Membership</span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-950">
+            Join Your <span className="gradient-text">Campus Chapter</span>
+          </h2>
+          <p className="text-text-muted text-xs sm:text-sm font-normal mt-1">
+            Select your district and college below to submit a membership approval request.
           </p>
         </div>
 
@@ -256,7 +273,7 @@ export default function JoinCommunityPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-2">
-                  College District (Assam)
+                  College District
                 </label>
                 {loading ? (
                   <div className="skeleton h-11 rounded-xl" />
@@ -431,6 +448,6 @@ export default function JoinCommunityPage() {
           </div>
         )}
       </div>
-    </section>
+    </div>
   );
 }

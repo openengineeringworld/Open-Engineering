@@ -28,7 +28,7 @@ export default function MyCommunityPage() {
         .maybeSingle();
 
       if (!mem) {
-        router.push('/community/join');
+        router.push('/community/search');
         return;
       }
 
@@ -67,7 +67,7 @@ export default function MyCommunityPage() {
               onClick={async () => {
                 if (confirm('Are you sure you want to cancel your join request?')) {
                   await supabase.from('community_members').delete().eq('id', membership.id);
-                  router.push('/community/join');
+                  router.push('/community/search');
                   router.refresh();
                 }
               }}
@@ -104,7 +104,7 @@ export default function MyCommunityPage() {
             onClick={async () => {
               if (confirm('Are you sure you want to leave the community?')) {
                 await supabase.from('community_members').delete().eq('id', membership.id);
-                router.push('/community/join');
+                router.push('/community/search');
                 router.refresh();
               }
             }}
