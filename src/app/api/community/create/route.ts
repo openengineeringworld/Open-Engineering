@@ -59,7 +59,7 @@ export async function POST(request: Request) {
     const commPayload = {
       college_id: collegeId,
       name: communityName,
-      description: `Official campus chapter for ${collegeFullName.trim()}. Lead: ${leaderName.trim()} (${leaderEmail.trim()}, ${leaderPhone.trim()}). WhatsApp: ${whatsappLink.trim()}`,
+      description: `Lead: ${leaderName.trim()}`,
       status: 'pending',
       member_count: 1
     };

@@ -16,9 +16,11 @@ export default function CommunityDetailPage() {
   const [membership, setMembership] = useState<CommunityMember | null>(null);
   const [userProfile, setUserProfile] = useState<Profile | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [whatsappLink, setWhatsappLink] = useState<string | null>(null);
+  const [leadName, setLeadName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
-  const [activeTab, setActiveTab] = useState('members'); // Default tab for non-members
+  const [activeTab, setActiveTab] = useState('feed');
 
   useEffect(() => {
     async function loadData() {
@@ -60,6 +62,39 @@ export default function CommunityDetailPage() {
       }
       setCommunity(comm);
 
+      // Extract leadName & whatsappLink from description or applications table
+      let lName: string | null = null;
+      let wLink: string | null = null;
+
+      if (comm.description) {
+        const leadMatch = comm.description.match(/Lead:\s*([^.(,@]+)/i);
+        if (leadMatch && leadMatch[1]) {
+          lName = leadMatch[1].trim();
+        }
+        const urlMatch = comm.description.match(/(https:\/\/chat\.whatsapp\.com\/[^\s)]+)/i);
+        if (urlMatch && urlMatch[1]) {
+          wLink = urlMatch[1];
+        }
+      }
+
+      try {
+        const { data: appData } = await supabase
+          .from('community_applications')
+          .select('whatsapp_link, leader_name')
+          .or(`community_name.eq."${comm.name}",college_full_name.eq."${comm.college?.name}"`)
+          .maybeSingle();
+
+        if (appData) {
+          if (appData.whatsapp_link) wLink = appData.whatsapp_link;
+          if (appData.leader_name) lName = appData.leader_name;
+        }
+      } catch (err) {
+        // Table fallback
+      }
+
+      setLeadName(lName);
+      setWhatsappLink(wLink);
+
       // Fetch user session
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -83,57 +118,12 @@ export default function CommunityDetailPage() {
 
         if (mem) {
           setMembership(mem);
-          if (mem.status === 'approved') {
-            setActiveTab('feed'); // Approved members default to feed
-          } else {
-            setActiveTab('members'); // Pending members default to members list
-          }
         }
       }
       setLoading(false);
     }
     loadData();
   }, [id, supabase, router]);
-
-  async function handleJoinOrSwitch() {
-    if (!userId || !community) return;
-    setJoining(true);
-
-    try {
-      // 1. Delete previous membership (if any)
-      await supabase
-        .from('community_members')
-        .delete()
-        .eq('user_id', userId);
-
-      // 2. Update user's college_id on profile
-      await supabase
-        .from('profiles')
-        .update({ college_id: community.college_id })
-        .eq('id', userId);
-
-      // 3. Insert new membership (status is pending)
-      const { error: joinError } = await supabase
-        .from('community_members')
-        .insert({
-          user_id: userId,
-          community_id: community.id,
-          role: 'member',
-          status: 'pending'
-        });
-
-      if (joinError) {
-        alert(joinError.message);
-      } else {
-        // Reload to update state
-        window.location.reload();
-      }
-    } catch (err: any) {
-      alert(err.message || 'An error occurred while switching community.');
-    } finally {
-      setJoining(false);
-    }
-  }
 
   if (loading) {
     return (
@@ -146,11 +136,8 @@ export default function CommunityDetailPage() {
   if (!community) return null;
 
   const isMember = membership && membership.status === 'approved';
-  const isPending = membership && membership.status === 'pending';
   const isCreator = membership?.role === 'creator';
-  const tabs = isMember 
-    ? ['feed', 'announcements', 'members', 'resources', 'events']
-    : ['members']; // Non-members and pending requests only see Members list
+  const tabs = ['feed', 'announcements', 'resources', 'events'];
 
   return (
     <section className="min-h-screen pt-32 pb-20 px-6 max-w-6xl mx-auto space-y-8">
@@ -166,86 +153,40 @@ export default function CommunityDetailPage() {
       <div className="neu-card p-8 border border-purple-300/40 shadow-[10px_10px_24px_rgba(147,51,234,0.12),-10px_-10px_24px_#ffffff] flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-5">
           <div className="w-16 h-16 neu-convex rounded-2xl flex items-center justify-center text-purple-700 font-black text-2xl border border-white/80 shadow-sm shrink-0">
-            {community.college?.name?.charAt(0) || 'C'}
+            {community.college?.name?.charAt(0) || community.name.charAt(0) || 'C'}
           </div>
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-950 mb-1">
               {community.name}
             </h1>
             <p className="text-text-muted text-sm font-medium">
-              📍 {community.college?.city}, {community.college?.state}
+              📍 {community.college?.city ? `${community.college.city}${community.college.state ? `, ${community.college.state}` : ''}` : 'India'}
             </p>
-            <p className="text-xs text-purple-600 font-semibold mt-2">
-              {community.member_count} active members {isMember && `· Joined as ${membership.role}`}
-            </p>
+            {leadName && (
+              <p className="text-xs font-extrabold text-purple-700 mt-2.5 bg-purple-50 px-3.5 py-1 rounded-full w-max border border-purple-200/60 inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
+                Lead: {leadName}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* CTA Actions */}
-        {!userId ? (
-          <Link
-            href={`/community/signup?redirect=/community/${community.id}`}
-            className="btn btn-primary py-3 px-6 shadow-[4px_4px_12px_rgba(147,51,234,0.25)] hover:scale-[1.01]"
+        {/* WhatsApp Quick Join Button in Header */}
+        {whatsappLink && (
+          <a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2.5 py-3 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all duration-300 shrink-0"
           >
-            Sign Up to Join Chapter ⚡
-          </Link>
-        ) : isPending ? (
-          <button
-            disabled
-            className="py-3 px-6 rounded-xl border border-purple-200 text-purple-700 font-bold text-xs bg-purple-50/50 hover:scale-100 disabled:opacity-75"
-          >
-            ⏳ Request Pending Approval
-          </button>
-        ) : !isMember ? (
-          <button
-            onClick={handleJoinOrSwitch}
-            disabled={joining}
-            className="btn btn-primary py-3 px-6 shadow-[4px_4px_12px_rgba(147,51,234,0.25)] hover:scale-[1.01] disabled:opacity-50"
-          >
-            {joining ? 'Requesting...' : 'Request to Join ⚡'}
-          </button>
-        ) : null}
+            <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
+              <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.892 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.399.637-1.144 4.175 4.275-1.122.613.377z"/>
+            </svg>
+            <span>Join WhatsApp Group</span>
+          </a>
+        )}
       </div>
 
-      {/* Guest/Non-Member Banner */}
-      {!isMember && (
-        <div className="p-6 rounded-2xl border border-purple-300/40 bg-purple-50/50 text-center space-y-3">
-          <h3 className="font-extrabold text-slate-950 text-sm sm:text-base">
-            {isPending ? '⏳ Join Request Pending' : '🔓 Unlock Full Community Interaction'}
-          </h3>
-          <p className="text-text-muted text-xs sm:text-sm font-medium max-w-2xl mx-auto">
-            {!userId 
-              ? "Sign in to participate in discussion threads, check announcements, coordinate events, and access the PDF resource vault."
-              : isPending
-              ? "Your request to join this community is pending approval by the Campus Admin. Once approved, you will unlock full access to the discussion feed, resources, and events."
-              : "You are not a member of this college community. Request to join this community chapter above to participate in discussion threads, check announcements, coordinate events, and access the PDF resource vault."}
-          </p>
-        </div>
-      )}
-
-      {/* Tab Navigation */}
-      {isMember && (
-        <div className="tab-list mb-6">
-          {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`tab-trigger capitalize ${activeTab === tab ? 'active' : ''}`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Tab Content Display */}
-      <div className="space-y-6">
-        {activeTab === 'feed' && <FeedTab communityId={community.id} userId={userId!} />}
-        {activeTab === 'announcements' && <AnnouncementsTab communityId={community.id} userId={userId!} isCreator={isCreator} />}
-        {activeTab === 'members' && <MembersTab communityId={community.id} />}
-        {activeTab === 'resources' && <ResourcesTab communityId={community.id} userId={userId!} />}
-        {activeTab === 'events' && <EventsTab communityId={community.id} userId={userId!} isCreator={isCreator} />}
-      </div>
     </section>
   );
 }

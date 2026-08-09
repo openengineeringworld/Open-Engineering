@@ -39,6 +39,17 @@ export default function FeaturedCommunitiesSection({
 
     return initialCommunities.map((dbComm) => {
       const isCentral = dbComm.id === 'open-engineering-community' || dbComm.id === 'open-engineering-central';
+      
+      let descriptionText = dbComm.description || '';
+      if (descriptionText) {
+        const leadMatch = descriptionText.match(/Lead:\s*([^.(,@]+)/i);
+        if (leadMatch && leadMatch[1] && leadMatch[1].trim()) {
+          descriptionText = `Lead: ${leadMatch[1].trim()}`;
+        } else if (descriptionText.toLowerCase().startsWith('official campus chapter for')) {
+          descriptionText = '';
+        }
+      }
+
       return {
         id: dbComm.id,
         name: dbComm.name,
@@ -48,10 +59,10 @@ export default function FeaturedCommunitiesSection({
           ? `${dbComm.college.city}${dbComm.college.state ? `, ${dbComm.college.state}` : ''}`
           : 'India',
         memberCount: dbComm.member_count || 1,
-        badgeText: isCentral ? '👑 Central Hub' : '⚡ Approved Chapter',
+        badgeText: isCentral ? '👑 Central Hub' : '',
         category: isCentral ? 'central' : 'approved',
         tags: ['Engineering', 'Campus Chapter', 'Projects'],
-        description: dbComm.description || 'Approved official campus engineering chapter connecting students and projects.',
+        description: descriptionText,
       };
     });
   }, [initialCommunities]);
@@ -179,16 +190,14 @@ export default function FeaturedCommunitiesSection({
                 <StaggerItem key={comm.id}>
                   <div className="bg-white/80 backdrop-blur-xs rounded-2xl p-5 border border-purple-100/80 shadow-[0_4px_16px_rgba(147,51,234,0.05)] hover:shadow-[0_8px_24px_rgba(147,51,234,0.12)] hover:border-purple-200 transition-all duration-300 flex flex-col justify-between h-full group">
                     <div>
-                      {/* Top Row: Avatar + Badge */}
-                      <div className="flex items-start justify-between gap-3 mb-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white font-black flex items-center justify-center text-base shadow-sm shrink-0">
-                          {comm.name.charAt(0)}
+                      {comm.category === 'central' && (
+                        <div className="flex justify-end mb-2">
+                          <span className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200/60 inline-flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
+                            Central Hub
+                          </span>
                         </div>
-                        <span className="shrink-0 text-[11px] font-bold px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200/60 inline-flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
-                          {comm.category === 'central' ? 'Central Hub' : 'Approved Chapter'}
-                        </span>
-                      </div>
+                      )}
 
                       {/* Community Title & College */}
                       <h3 className="font-extrabold text-base text-slate-900 group-hover:text-purple-700 transition-colors line-clamp-1 mb-1">
@@ -212,19 +221,16 @@ export default function FeaturedCommunitiesSection({
                         </div>
                       </div>
 
-                      {/* Description */}
-                      <p className="text-slate-600 text-xs leading-relaxed line-clamp-2 mb-4">
-                        {comm.description}
-                      </p>
+                      {/* Description / Lead Info */}
+                      {comm.description ? (
+                        <p className="text-slate-600 text-xs font-semibold leading-relaxed line-clamp-2 mb-4">
+                          {comm.description}
+                        </p>
+                      ) : null}
                     </div>
 
                     {/* Card Footer */}
-                    <div className="pt-3 border-t border-purple-100/60 flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-emerald-600 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        {comm.memberCount.toLocaleString()} {comm.memberCount === 1 ? 'Member' : 'Members'}
-                      </span>
-
+                    <div className="pt-3 border-t border-purple-100/60 flex items-center justify-end">
                       <Link
                         href={`/community/${comm.id}`}
                         className="text-xs font-bold text-purple-700 hover:text-purple-900 group-hover:translate-x-0.5 transition-all inline-flex items-center gap-1"
