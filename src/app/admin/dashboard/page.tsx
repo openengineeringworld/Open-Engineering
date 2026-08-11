@@ -51,14 +51,20 @@ export default function AdminDashboardPage() {
 
   // Edit Modal state for Communities
   const [editingCommunity, setEditingCommunity] = useState<CommunityRequest | null>(null);
+  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({});
+  const [showEditPassword, setShowEditPassword] = useState(false);
   const [editForm, setEditForm] = useState({
     name: '',
     description: '',
-    member_count: 0,
+    member_count: 1,
     college_name: '',
-    college_city: '',
-    college_state: '',
-    college_district: '',
+    college_short_name: '',
+    leader_name: '',
+    leader_email: '',
+    leader_phone: '',
+    whatsapp_link: '',
+    additional_notes: '',
+    password: '',
     status: 'approved' as 'pending' | 'approved' | 'rejected',
   });
   const [savingEdit, setSavingEdit] = useState(false);
@@ -256,14 +262,20 @@ export default function AdminDashboardPage() {
   // Open Edit Modal for Community
   function handleOpenEdit(comm: CommunityRequest) {
     setEditingCommunity(comm);
+    const app = comm.application_details;
+    setShowEditPassword(false);
     setEditForm({
-      name: comm.name,
+      name: comm.name || '',
       description: comm.description || '',
       member_count: comm.member_count || 1,
-      college_name: comm.college?.name || comm.application_details?.college_full_name || '',
-      college_city: comm.college?.city || 'N/A',
-      college_state: comm.college?.state || 'Assam',
-      college_district: comm.college?.district || '',
+      college_name: comm.college?.name || app?.college_full_name || '',
+      college_short_name: app?.college_short_name || '',
+      leader_name: app?.leader_name || '',
+      leader_email: app?.leader_email || '',
+      leader_phone: app?.leader_phone || '',
+      whatsapp_link: app?.whatsapp_link || '',
+      additional_notes: app?.additional_notes || '',
+      password: app?.password || '',
       status: comm.status || 'approved',
     });
   }
@@ -286,10 +298,14 @@ export default function AdminDashboardPage() {
           member_count: editForm.member_count,
           status: editForm.status,
           college_id: editingCommunity.college_id,
-          college_name: editForm.college_name,
-          college_city: editForm.college_city,
-          college_state: editForm.college_state,
-          college_district: editForm.college_district,
+          college_full_name: editForm.college_name,
+          college_short_name: editForm.college_short_name,
+          leader_name: editForm.leader_name,
+          leader_email: editForm.leader_email,
+          leader_phone: editForm.leader_phone,
+          whatsapp_link: editForm.whatsapp_link,
+          additional_notes: editForm.additional_notes,
+          password: editForm.password,
         }),
       });
 
@@ -607,8 +623,16 @@ export default function AdminDashboardPage() {
                           </div>
                           <div>
                             <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">College / Institute</span>
-                            <p className="text-sm font-bold text-slate-200">{collegeName}</p>
+                            <p className="text-sm font-bold text-slate-200">
+                              {collegeName} {app?.college_short_name ? `(${app.college_short_name.toUpperCase()})` : ''}
+                            </p>
                           </div>
+                          {app?.additional_notes && (
+                            <div>
+                              <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">College Address / Notes</span>
+                              <p className="text-xs text-slate-300 italic">{app.additional_notes}</p>
+                            </div>
+                          )}
                           {comm.description && (
                             <p className="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-3 rounded-xl border border-slate-800">
                               {comm.description}
@@ -618,7 +642,7 @@ export default function AdminDashboardPage() {
 
                         <div className="space-y-3 bg-slate-900/40 p-4 rounded-2xl border border-slate-800">
                           <span className="text-[10px] font-black uppercase text-amber-400 block mb-2 border-b border-slate-800 pb-1">
-                            Application Leader Details
+                            Application Leader Details & Login Credentials
                           </span>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                             <div>
@@ -642,6 +666,23 @@ export default function AdminDashboardPage() {
                                   Group Link 🔗
                                 </a>
                               ) : <span className="text-slate-500">N/A</span>}
+                            </div>
+                            <div className="col-span-2 pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                              <div>
+                                <span className="text-slate-400 block text-[10px]">Password</span>
+                                <span className="font-mono font-bold text-amber-300 text-xs">
+                                  {visiblePasswords[comm.id] ? (app?.password || 'Not set') : '••••••••'}
+                                </span>
+                              </div>
+                              {app?.password && (
+                                <button
+                                  type="button"
+                                  onClick={() => setVisiblePasswords(prev => ({ ...prev, [comm.id]: !prev[comm.id] }))}
+                                  className="text-[11px] text-purple-400 hover:text-purple-300 font-bold bg-purple-950/40 px-2.5 py-1 rounded-lg border border-purple-500/30 transition-all"
+                                >
+                                  {visiblePasswords[comm.id] ? 'Hide' : 'Show Password'}
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -914,78 +955,185 @@ export default function AdminDashboardPage() {
       {/* Edit Community Modal */}
       {editingCommunity && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#121827] border border-slate-700/80 rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl space-y-6 relative text-slate-100 my-8">
+          <div className="bg-[#121827] border border-slate-700/80 rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 relative text-slate-100 my-8">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div>
                 <span className="text-[10px] font-black text-purple-400 uppercase tracking-wider block">Admin Control</span>
-                <h3 className="text-xl font-black text-white">Edit Community Details</h3>
+                <h3 className="text-xl font-black text-white">Edit All Community & Application Fields</h3>
               </div>
-              <button onClick={() => setEditingCommunity(null)} className="w-8 h-8 rounded-full bg-slate-800 text-slate-300 font-bold">✕</button>
+              <button onClick={() => setEditingCommunity(null)} className="w-8 h-8 rounded-full bg-slate-800 text-slate-300 font-bold hover:bg-slate-700">✕</button>
             </div>
 
-            <form onSubmit={handleSaveEdit} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-slate-300 mb-1">Community Name</label>
-                <input
-                  type="text"
-                  required
-                  value={editForm.name}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-3 text-white font-semibold"
-                />
+            <form onSubmit={handleSaveEdit} className="space-y-4 text-xs max-h-[75vh] overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">Community Name *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.name}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:border-purple-500 outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-300 mb-1">College Short Form *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.college_short_name}
+                    onChange={(e) => setEditForm({ ...editForm, college_short_name: e.target.value })}
+                    placeholder="e.g. AEC"
+                    className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold uppercase focus:border-purple-500 outline-none"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">College Full Name</label>
+                <label className="block font-bold text-slate-300 mb-1">College Full Name *</label>
                 <input
                   type="text"
                   required
                   value={editForm.college_name}
                   onChange={(e) => setEditForm({ ...editForm, college_name: e.target.value })}
-                  className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-3 text-white font-semibold"
+                  placeholder="e.g. Assam Engineering College"
+                  className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:border-purple-500 outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block font-bold text-slate-300 mb-1">College Address / Additional Notes</label>
+                <input
+                  type="text"
+                  value={editForm.additional_notes}
+                  onChange={(e) => setEditForm({ ...editForm, additional_notes: e.target.value })}
+                  placeholder="e.g. Jalukbari, Guwahati, Assam 781013"
+                  className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:border-purple-500 outline-none"
+                />
+              </div>
+
+              <div className="border-t border-slate-800/80 pt-3">
+                <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider block mb-3">Lead / Representative Contact Info</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-slate-300 mb-1">Leader Full Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.leader_name}
+                      onChange={(e) => setEditForm({ ...editForm, leader_name: e.target.value })}
+                      placeholder="e.g. Rahul Das"
+                      className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:border-purple-500 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-300 mb-1">Leader Email Address *</label>
+                    <input
+                      type="email"
+                      required
+                      value={editForm.leader_email}
+                      onChange={(e) => setEditForm({ ...editForm, leader_email: e.target.value })}
+                      placeholder="rahul@example.com"
+                      className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:border-purple-500 outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Member Count</label>
+                  <label className="block font-bold text-slate-300 mb-1">Phone / WhatsApp Number *</label>
                   <input
-                    type="number"
-                    min={1}
-                    value={editForm.member_count}
-                    onChange={(e) => setEditForm({ ...editForm, member_count: parseInt(e.target.value) || 1 })}
-                    className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-3 text-white font-semibold"
+                    type="tel"
+                    required
+                    value={editForm.leader_phone}
+                    onChange={(e) => setEditForm({ ...editForm, leader_phone: e.target.value })}
+                    placeholder="+91 98765 43210"
+                    className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:border-purple-500 outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-300 mb-1">Supabase Status</label>
-                  <select
-                    value={editForm.status}
-                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value as any })}
-                    className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-3 text-white font-semibold"
-                  >
-                    <option value="approved">Approved & Verified</option>
-                    <option value="pending">Pending Approval</option>
-                    <option value="rejected">Rejected</option>
-                  </select>
+                  <label className="block font-bold text-slate-300 mb-1">WhatsApp Group Invite Link *</label>
+                  <input
+                    type="url"
+                    required
+                    value={editForm.whatsapp_link}
+                    onChange={(e) => setEditForm({ ...editForm, whatsapp_link: e.target.value })}
+                    placeholder="https://chat.whatsapp.com/..."
+                    className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:border-purple-500 outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="border-t border-slate-800/80 pt-3">
+                <span className="text-[10px] font-black text-amber-400 uppercase tracking-wider block mb-3">Security & Member Settings</span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-300 mb-1">Password *</label>
+                    <div className="relative">
+                      <input
+                        type={showEditPassword ? 'text' : 'password'}
+                        required
+                        minLength={6}
+                        value={editForm.password}
+                        onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                        className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-white font-mono font-semibold focus:border-purple-500 outline-none pr-12"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowEditPassword(!showEditPassword)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-purple-400 font-bold hover:underline"
+                      >
+                        {showEditPassword ? 'Hide' : 'Show'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-300 mb-1">Member Count</label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={editForm.member_count}
+                      onChange={(e) => setEditForm({ ...editForm, member_count: parseInt(e.target.value) || 1 })}
+                      className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:border-purple-500 outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-300 mb-1">Supabase Status</label>
+                    <select
+                      value={editForm.status}
+                      onChange={(e) => setEditForm({ ...editForm, status: e.target.value as any })}
+                      className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-white font-semibold focus:border-purple-500 outline-none"
+                    >
+                      <option value="approved">Approved & Verified</option>
+                      <option value="pending">Pending Approval</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-300 mb-1">Description</label>
+                <label className="block font-bold text-slate-300 mb-1">Description / Lead Summary</label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={editForm.description}
                   onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                  className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-3 text-white font-medium resize-none"
+                  className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-white font-medium resize-none focus:border-purple-500 outline-none"
                 />
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-                <button type="button" onClick={() => setEditingCommunity(null)} className="py-3 px-5 rounded-xl bg-slate-800 text-slate-300 font-bold">Cancel</button>
-                <button type="submit" disabled={savingEdit} className="py-3 px-6 rounded-xl bg-purple-600 text-white font-extrabold disabled:opacity-50">
-                  {savingEdit ? 'Saving...' : 'Save Changes in Supabase'}
+                <button type="button" onClick={() => setEditingCommunity(null)} className="py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold">
+                  Cancel
+                </button>
+                <button type="submit" disabled={savingEdit} className="py-3 px-6 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold disabled:opacity-50 shadow-lg shadow-purple-600/30">
+                  {savingEdit ? 'Saving in Supabase...' : 'Save All Changes'}
                 </button>
               </div>
             </form>

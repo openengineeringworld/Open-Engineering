@@ -27,12 +27,38 @@ export default function CommunityDetailPage() {
       if (!id) return;
       setLoading(true);
 
-      // Fetch community details
-      let { data: comm } = await supabase
-        .from('communities')
-        .select('*, college:colleges(*)')
-        .eq('id', id)
-        .single();
+      // Fetch community details and details metadata (whatsapp_link, lead_name) from backend API
+      let comm: any = null;
+      let wLink: string | null = null;
+      let lName: string | null = null;
+
+      try {
+        const detailsRes = await fetch(`/api/community/details?id=${encodeURIComponent(id)}`);
+        if (detailsRes.ok) {
+          const detailsData = await detailsRes.json();
+          if (detailsData.community) {
+            comm = detailsData.community;
+          }
+          if (detailsData.whatsapp_link) {
+            wLink = detailsData.whatsapp_link;
+          }
+          if (detailsData.leader_name) {
+            lName = detailsData.leader_name;
+          }
+        }
+      } catch (err) {
+        console.warn('Could not fetch from /api/community/details:', err);
+      }
+
+      // Fallback query communities directly if API failed to return comm
+      if (!comm) {
+        let { data: commFromDb } = await supabase
+          .from('communities')
+          .select('*, college:colleges(*)')
+          .eq('id', id)
+          .single();
+        comm = commFromDb;
+      }
 
       if (!comm && (id === 'open-engineering-community' || id === 'open-engineering-main')) {
         comm = {
@@ -62,67 +88,17 @@ export default function CommunityDetailPage() {
       }
       setCommunity(comm);
 
-      // Extract leadName & whatsappLink from description or applications/submissions tables
-      let lName: string | null = null;
-      let wLink: string | null = (comm as any).whatsapp_link || null;
-
-      if (comm.description) {
-        const leadMatch = comm.description.match(/Lead:\s*([^.(,@]+)/i);
-        if (leadMatch && leadMatch[1]) {
-          lName = leadMatch[1].trim();
-        }
-        const urlMatch = comm.description.match(/(https:\/\/(chat\.whatsapp\.com|wa\.me|whatsapp\.com)\/[^\s)]+)/i);
-        if (urlMatch && urlMatch[1]) {
-          wLink = urlMatch[1];
-        }
-      }
-
-      try {
-        const { data: appData } = await supabase
-          .from('community_applications')
-          .select('whatsapp_link, leader_name')
-          .or(`community_name.eq."${comm.name}",college_full_name.eq."${comm.college?.name}"`)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (appData) {
-          if (appData.whatsapp_link) wLink = appData.whatsapp_link;
-          if (appData.leader_name) lName = appData.leader_name;
-        }
-      } catch (err) {
-        // Table fallback
-      }
-
-      // Try contact_submissions table fallback
+      // Backup extraction from description if not yet found
       if (!wLink || !lName) {
-        try {
-          const { data: submissions } = await supabase
-            .from('contact_submissions')
-            .select('message')
-            .ilike('subject', 'Community Application:%');
-
-          if (submissions) {
-            for (const sub of submissions) {
-              try {
-                const parsed = JSON.parse(sub.message);
-                const isMatch =
-                  parsed.community_id === comm.id ||
-                  (parsed.community_name && parsed.community_name.toLowerCase() === comm.name.toLowerCase()) ||
-                  (parsed.college_full_name && comm.college?.name && parsed.college_full_name.toLowerCase() === comm.college.name.toLowerCase());
-
-                if (isMatch) {
-                  if (!wLink && parsed.whatsapp_link) wLink = parsed.whatsapp_link;
-                  if (!lName && parsed.leader_name) lName = parsed.leader_name;
-                  break;
-                }
-              } catch {
-                // Not JSON
-              }
-            }
+        if (comm.description) {
+          if (!lName) {
+            const leadMatch = comm.description.match(/Lead:\s*([^.(,@]+)/i);
+            if (leadMatch && leadMatch[1]) lName = leadMatch[1].trim();
           }
-        } catch (err) {
-          // Ignore fallback errors
+          if (!wLink) {
+            const urlMatch = comm.description.match(/(https:\/\/(chat\.whatsapp\.com|wa\.me|whatsapp\.com)\/[^\s)]+)/i);
+            if (urlMatch && urlMatch[1]) wLink = urlMatch[1];
+          }
         }
       }
 
