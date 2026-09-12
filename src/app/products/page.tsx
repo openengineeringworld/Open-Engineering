@@ -3,7 +3,7 @@ import FadeIn from '@/components/animations/FadeIn';
 
 export const metadata: Metadata = {
   title: 'Products',
-  description: 'Explore Open Engineering products — BhumiCare, Acc2Not, Smart Home Automation, and Next Gen Smart Vehicle Engines.',
+  description: 'Explore Open Engineering products — BhumiCare, Acc2Not, Smart Home Automation, Smart AI Health Monitoring Band, and Next Gen Smart Vehicle Engines.',
 };
 
 const products = [
@@ -67,6 +67,22 @@ const products = [
       'Electric Powertrain Architecture',
       '100% Ethanol Engine Technology',
       'Hydrogen Energy Combustion',
+    ],
+  },
+  {
+    id: 'health-band',
+    title: 'Smart AI Health Monitoring Band',
+    category: 'AI Wearable & Health-Tech',
+    desc: 'A next-generation AI-powered health monitoring wristband designed for everyone. Pair it with your smartphone to continuously track vital health metrics — heart rate, SpO2, sleep patterns, stress levels, and activity data. The band uses on-device machine learning to learn your unique health baseline, detect anomalies early, and provide personalized wellness recommendations. Train your health data right from your phone and let the AI coach you toward better habits, every day.',
+    status: 'ongoing' as const,
+    link: null,
+    linkText: null,
+    image: '/images/products/health-band.jpg',
+    features: [
+      'AI-Powered Health Baseline Learning',
+      'Real-Time Heart Rate & SpO2 Monitoring',
+      'Phone-Synced Personal Health Training',
+      'Smart Anomaly Detection & Wellness Coaching',
     ],
   },
 ];

@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Logo from '@/components/ui/Logo';
-import type { InternshipApplication, ContactSubmission } from '@/types/database';
 
 interface CommunityRequest {
   id: string;
@@ -34,18 +33,14 @@ interface CommunityRequest {
 }
 
 export default function AdminDashboardPage() {
-  const [mainSection, setMainSection] = useState<'communities' | 'internships' | 'contacts'>('communities');
-  
   // Data states
   const [communities, setCommunities] = useState<CommunityRequest[]>([]);
-  const [internships, setInternships] = useState<InternshipApplication[]>([]);
-  const [contacts, setContacts] = useState<ContactSubmission[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [authChecking, setAuthChecking] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Filter tabs for communities & internships
+  // Filter tabs for communities
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -96,17 +91,17 @@ export default function AdminDashboardPage() {
     init();
   }, [router]);
 
-  // Refresh all dataset from Supabase APIs
+  // Refresh dataset from Supabase APIs
   async function refreshAllData() {
     setLoading(true);
     try {
-      await Promise.all([loadCommunities(), loadInternships(), loadContacts()]);
+      await loadCommunities();
     } finally {
       setLoading(false);
     }
   }
 
-  // 1. Load Communities
+  // Load Communities
   async function loadCommunities() {
     try {
       const res = await fetch('/api/admin/communities');
@@ -116,32 +111,6 @@ export default function AdminDashboardPage() {
       }
     } catch (err) {
       console.error('Error loading communities:', err);
-    }
-  }
-
-  // 2. Load Internship Applications
-  async function loadInternships() {
-    try {
-      const res = await fetch('/api/admin/internships');
-      if (res.ok) {
-        const data = await res.json();
-        setInternships(data.applications || []);
-      }
-    } catch (err) {
-      console.error('Error loading internship applications:', err);
-    }
-  }
-
-  // 3. Load Contact Messages
-  async function loadContacts() {
-    try {
-      const res = await fetch('/api/admin/contacts');
-      if (res.ok) {
-        const data = await res.json();
-        setContacts(data.contacts || []);
-      }
-    } catch (err) {
-      console.error('Error loading contact submissions:', err);
     }
   }
 
@@ -188,35 +157,6 @@ export default function AdminDashboardPage() {
     }
   }
 
-  // Handle Internship Status Change in Supabase
-  async function handleInternshipStatusChange(id: string, newStatus: 'approved' | 'pending' | 'rejected') {
-    try {
-      setActionMessage(null);
-      const res = await fetch('/api/admin/internships', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: newStatus }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to update internship application status');
-      }
-
-      setInternships((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
-      );
-
-      setActionMessage({
-        type: 'success',
-        text: `Internship application status updated to "${newStatus.toUpperCase()}" in Supabase.`,
-      });
-    } catch (err: any) {
-      setActionMessage({ type: 'error', text: err?.message || 'Failed to update status' });
-    }
-  }
-
   // Delete Community Request
   async function handleDeleteCommunity(id: string, name: string) {
     if (!window.confirm(`Are you sure you want to delete community "${name}"?`)) return;
@@ -226,34 +166,6 @@ export default function AdminDashboardPage() {
       if (!res.ok) throw new Error('Failed to delete community');
       setCommunities((prev) => prev.filter((c) => c.id !== id));
       setActionMessage({ type: 'success', text: `Community "${name}" deleted.` });
-    } catch (err: any) {
-      setActionMessage({ type: 'error', text: err?.message });
-    }
-  }
-
-  // Delete Internship Application
-  async function handleDeleteInternship(id: string, applicantName: string) {
-    if (!window.confirm(`Delete internship application for "${applicantName}"?`)) return;
-    try {
-      setActionMessage(null);
-      const res = await fetch(`/api/admin/internships?id=${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete internship application');
-      setInternships((prev) => prev.filter((item) => item.id !== id));
-      setActionMessage({ type: 'success', text: `Application for "${applicantName}" deleted.` });
-    } catch (err: any) {
-      setActionMessage({ type: 'error', text: err?.message });
-    }
-  }
-
-  // Delete Contact Message
-  async function handleDeleteContact(id: string) {
-    if (!window.confirm('Delete this contact message?')) return;
-    try {
-      setActionMessage(null);
-      const res = await fetch(`/api/admin/contacts?id=${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete contact message');
-      setContacts((prev) => prev.filter((item) => item.id !== id));
-      setActionMessage({ type: 'success', text: 'Contact message deleted.' });
     } catch (err: any) {
       setActionMessage({ type: 'error', text: err?.message });
     }
@@ -352,30 +264,6 @@ export default function AdminDashboardPage() {
     });
   }, [communities, activeTab, searchQuery]);
 
-  // Internships statistics & filtering
-  const internshipStats = useMemo(() => {
-    const total = internships.length;
-    const pending = internships.filter((i) => i.status === 'pending').length;
-    const approved = internships.filter((i) => i.status === 'approved').length;
-    const rejected = internships.filter((i) => i.status === 'rejected').length;
-    return { total, pending, approved, rejected };
-  }, [internships]);
-
-  const filteredInternships = useMemo(() => {
-    return internships.filter((item) => {
-      if (activeTab !== 'all' && item.status !== activeTab) return false;
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const name = item.full_name?.toLowerCase() || '';
-        const email = item.email?.toLowerCase() || '';
-        const col = item.college_name?.toLowerCase() || '';
-        const title = item.program_title?.toLowerCase() || '';
-        return name.includes(q) || email.includes(q) || col.includes(q) || title.includes(q);
-      }
-      return true;
-    });
-  }, [internships, activeTab, searchQuery]);
-
   if (authChecking) {
     return (
       <div className="min-h-screen bg-[#090d16] flex items-center justify-center p-4 text-white">
@@ -459,496 +347,228 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* Category Navigation Bar */}
-        <div className="flex flex-wrap items-center gap-3 bg-[#121827] p-2 rounded-2xl border border-slate-800">
-          <button
-            onClick={() => { setMainSection('communities'); setActiveTab('pending'); }}
-            className={`py-3 px-6 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center gap-2 ${
-              mainSection === 'communities'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
-            }`}
-          >
-            <span>🏛️ Community Applications</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-950/80 text-purple-200 border border-purple-400/30">
-              {commStats.pending} pending
-            </span>
-          </button>
+        {/* COMMUNITY APPLICATIONS & CHAPTERS */}
+        <div className="space-y-6">
+          {/* Stat Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-[#121827] border border-slate-800 rounded-2xl p-5 shadow-lg">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Chapter Submissions</span>
+              <div className="text-2xl sm:text-3xl font-black text-white">{commStats.total}</div>
+            </div>
+            <div className="bg-[#121827] border border-amber-500/30 rounded-2xl p-5 shadow-lg bg-amber-500/5">
+              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block mb-1">Pending Approval</span>
+              <div className="text-2xl sm:text-3xl font-black text-amber-300">{commStats.pending}</div>
+            </div>
+            <div className="bg-[#121827] border border-emerald-500/30 rounded-2xl p-5 shadow-lg bg-emerald-500/5">
+              <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block mb-1">Verified & Approved</span>
+              <div className="text-2xl sm:text-3xl font-black text-emerald-300">{commStats.approved}</div>
+            </div>
+            <div className="bg-[#121827] border border-slate-800 rounded-2xl p-5 shadow-lg">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Rejected</span>
+              <div className="text-2xl sm:text-3xl font-black text-slate-400">{commStats.rejected}</div>
+            </div>
+          </div>
 
-          <button
-            onClick={() => { setMainSection('internships'); setActiveTab('pending'); }}
-            className={`py-3 px-6 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center gap-2 ${
-              mainSection === 'internships'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
-            }`}
-          >
-            <span>🚀 Internship Applications</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] bg-purple-950/80 text-purple-200 border border-purple-400/30">
-              {internshipStats.pending} pending
-            </span>
-          </button>
-
-          <button
-            onClick={() => setMainSection('contacts')}
-            className={`py-3 px-6 rounded-xl font-black text-xs sm:text-sm transition-all flex items-center gap-2 ${
-              mainSection === 'contacts'
-                ? 'bg-purple-600 text-white shadow-lg shadow-purple-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
-            }`}
-          >
-            <span>✉️ Contact Messages</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-300">
-              {contacts.length} total
-            </span>
-          </button>
-        </div>
-
-        {/* SECTION 1: COMMUNITY APPLICATIONS & CHAPTERS */}
-        {mainSection === 'communities' && (
-          <div className="space-y-6">
-            {/* Stat Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-[#121827] border border-slate-800 rounded-2xl p-5 shadow-lg">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Chapter Submissions</span>
-                <div className="text-2xl sm:text-3xl font-black text-white">{commStats.total}</div>
-              </div>
-              <div className="bg-[#121827] border border-amber-500/30 rounded-2xl p-5 shadow-lg bg-amber-500/5">
-                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block mb-1">Pending Approval</span>
-                <div className="text-2xl sm:text-3xl font-black text-amber-300">{commStats.pending}</div>
-              </div>
-              <div className="bg-[#121827] border border-emerald-500/30 rounded-2xl p-5 shadow-lg bg-emerald-500/5">
-                <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block mb-1">Verified & Approved</span>
-                <div className="text-2xl sm:text-3xl font-black text-emerald-300">{commStats.approved}</div>
-              </div>
-              <div className="bg-[#121827] border border-slate-800 rounded-2xl p-5 shadow-lg">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Rejected</span>
-                <div className="text-2xl sm:text-3xl font-black text-slate-400">{commStats.rejected}</div>
-              </div>
+          {/* Filter Tabs & Search */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-[#121827] p-4 rounded-2xl border border-slate-800">
+            <div className="flex flex-wrap items-center gap-2">
+              {[
+                { id: 'pending', label: 'Pending Approval', count: commStats.pending },
+                { id: 'approved', label: 'Approved Clubs', count: commStats.approved },
+                { id: 'all', label: 'All Submissions', count: commStats.total },
+                { id: 'rejected', label: 'Rejected', count: commStats.rejected },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`py-2 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 ${
+                    activeTab === tab.id
+                      ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
+                      : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400'
+                  }`}
+                >
+                  <span>{tab.label}</span>
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-300">{tab.count}</span>
+                </button>
+              ))}
             </div>
 
-            {/* Filter Tabs & Search */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-[#121827] p-4 rounded-2xl border border-slate-800">
-              <div className="flex flex-wrap items-center gap-2">
-                {[
-                  { id: 'pending', label: 'Pending Approval', count: commStats.pending },
-                  { id: 'approved', label: 'Approved Clubs', count: commStats.approved },
-                  { id: 'all', label: 'All Submissions', count: commStats.total },
-                  { id: 'rejected', label: 'Rejected', count: commStats.rejected },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`py-2 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 ${
-                      activeTab === tab.id
-                        ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
-                        : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400'
+            <div className="relative min-w-[240px]">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search college, club, leader..."
+                className="w-full bg-[#1a2234] border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all pr-8"
+              />
+            </div>
+          </div>
+
+          {/* List */}
+          {loading ? (
+            <div className="py-20 text-center">
+              <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-slate-400 text-xs font-bold">Loading community submissions from Supabase...</p>
+            </div>
+          ) : filteredCommunities.length === 0 ? (
+            <div className="bg-[#121827] border border-slate-800 rounded-3xl p-12 text-center">
+              <p className="text-slate-400 text-xs">No community requests found in Supabase matching current filters.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6">
+              {filteredCommunities.map((comm) => {
+                const isPending = comm.status === 'pending';
+                const isApproved = comm.status === 'approved';
+
+                const app = comm.application_details;
+                const collegeName = comm.college?.name || app?.college_full_name || 'N/A';
+
+                return (
+                  <div
+                    key={comm.id}
+                    className={`bg-[#121827] border rounded-3xl p-6 sm:p-8 transition-all relative shadow-xl ${
+                      isPending
+                        ? 'border-amber-500/40 bg-gradient-to-br from-[#121827] to-[#1a1712]'
+                        : isApproved
+                        ? 'border-emerald-500/30 bg-gradient-to-br from-[#121827] to-[#0f1d18]'
+                        : 'border-slate-800'
                     }`}
                   >
-                    <span>{tab.label}</span>
-                    <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-300">{tab.count}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="relative min-w-[240px]">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search college, club, leader..."
-                  className="w-full bg-[#1a2234] border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all pr-8"
-                />
-              </div>
-            </div>
-
-            {/* List */}
-            {loading ? (
-              <div className="py-20 text-center">
-                <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-slate-400 text-xs font-bold">Loading community submissions from Supabase...</p>
-              </div>
-            ) : filteredCommunities.length === 0 ? (
-              <div className="bg-[#121827] border border-slate-800 rounded-3xl p-12 text-center">
-                <p className="text-slate-400 text-xs">No community requests found in Supabase matching current filters.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-6">
-                {filteredCommunities.map((comm) => {
-                  const isPending = comm.status === 'pending';
-                  const isApproved = comm.status === 'approved';
-
-                  const app = comm.application_details;
-                  const collegeName = comm.college?.name || app?.college_full_name || 'N/A';
-
-                  return (
-                    <div
-                      key={comm.id}
-                      className={`bg-[#121827] border rounded-3xl p-6 sm:p-8 transition-all relative shadow-xl ${
-                        isPending
-                          ? 'border-amber-500/40 bg-gradient-to-br from-[#121827] to-[#1a1712]'
-                          : isApproved
-                          ? 'border-emerald-500/30 bg-gradient-to-br from-[#121827] to-[#0f1d18]'
-                          : 'border-slate-800'
-                      }`}
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800/80">
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase inline-flex items-center gap-1.5 ${
-                              isPending
-                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                                : isApproved
-                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                                : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                            }`}
-                          >
-                            {isPending ? 'Pending Approval' : isApproved ? 'Approved & Verified' : 'Rejected'}
-                          </span>
-                          <span className="text-[11px] text-slate-400">
-                            {new Date(comm.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-
-                        <div className="text-xs font-bold text-purple-300 bg-purple-950/60 px-3 py-1 rounded-xl border border-purple-500/30">
-                          👥 {comm.member_count || 1} Member(s)
-                        </div>
+                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800/80">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase inline-flex items-center gap-1.5 ${
+                            isPending
+                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                              : isApproved
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                              : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                          }`}
+                        >
+                          {isPending ? 'Pending Approval' : isApproved ? 'Approved & Verified' : 'Rejected'}
+                        </span>
+                        <span className="text-[11px] text-slate-400">
+                          {new Date(comm.created_at).toLocaleDateString()}
+                        </span>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div className="space-y-3">
-                          <div>
-                            <span className="text-[10px] font-black uppercase text-purple-400 block mb-1">Community Name</span>
-                            <h3 className="text-xl font-black text-white">{comm.name}</h3>
-                          </div>
-                          <div>
-                            <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">College / Institute</span>
-                            <p className="text-sm font-bold text-slate-200">
-                              {collegeName} {app?.college_short_name ? `(${app.college_short_name.toUpperCase()})` : ''}
-                            </p>
-                          </div>
-                          {app?.additional_notes && (
-                            <div>
-                              <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">College Address / Notes</span>
-                              <p className="text-xs text-slate-300 italic">{app.additional_notes}</p>
-                            </div>
-                          )}
-                          {comm.description && (
-                            <p className="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-3 rounded-xl border border-slate-800">
-                              {comm.description}
-                            </p>
-                          )}
-                        </div>
+                      <div className="text-xs font-bold text-purple-300 bg-purple-950/60 px-3 py-1 rounded-xl border border-purple-500/30">
+                        👥 {comm.member_count || 1} Member(s)
+                      </div>
+                    </div>
 
-                        <div className="space-y-3 bg-slate-900/40 p-4 rounded-2xl border border-slate-800">
-                          <span className="text-[10px] font-black uppercase text-amber-400 block mb-2 border-b border-slate-800 pb-1">
-                            Application Leader Details & Login Credentials
-                          </span>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                            <div>
-                              <span className="text-slate-400 block text-[10px]">Leader Name</span>
-                              <span className="font-bold text-white">{app?.leader_name || 'N/A'}</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-400 block text-[10px]">Email Address</span>
-                              <a href={`mailto:${app?.leader_email}`} className="font-semibold text-purple-400 hover:underline block truncate">
-                                {app?.leader_email || 'N/A'}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div className="space-y-3">
+                        <div>
+                          <span className="text-[10px] font-black uppercase text-purple-400 block mb-1">Community Name</span>
+                          <h3 className="text-xl font-black text-white">{comm.name}</h3>
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">College / Institute</span>
+                          <p className="text-sm font-bold text-slate-200">
+                            {collegeName} {app?.college_short_name ? `(${app.college_short_name.toUpperCase()})` : ''}
+                          </p>
+                        </div>
+                        {app?.additional_notes && (
+                          <div>
+                            <span className="text-[10px] font-black uppercase text-slate-400 block mb-0.5">College Address / Notes</span>
+                            <p className="text-xs text-slate-300 italic">{app.additional_notes}</p>
+                          </div>
+                        )}
+                        {comm.description && (
+                          <p className="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                            {comm.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="space-y-3 bg-slate-900/40 p-4 rounded-2xl border border-slate-800">
+                        <span className="text-[10px] font-black uppercase text-amber-400 block mb-2 border-b border-slate-800 pb-1">
+                          Application Leader Details & Login Credentials
+                        </span>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                          <div>
+                            <span className="text-slate-400 block text-[10px]">Leader Name</span>
+                            <span className="font-bold text-white">{app?.leader_name || 'N/A'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[10px]">Email Address</span>
+                            <a href={`mailto:${app?.leader_email}`} className="font-semibold text-purple-400 hover:underline block truncate">
+                              {app?.leader_email || 'N/A'}
+                            </a>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[10px]">Phone</span>
+                            <span className="font-bold text-slate-200">{app?.leader_phone || 'N/A'}</span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 block text-[10px]">WhatsApp</span>
+                            {app?.whatsapp_link ? (
+                              <a href={app.whatsapp_link} target="_blank" rel="noopener noreferrer" className="text-emerald-400 font-bold hover:underline">
+                                Group Link 🔗
                               </a>
-                            </div>
-                            <div>
-                              <span className="text-slate-400 block text-[10px]">Phone</span>
-                              <span className="font-bold text-slate-200">{app?.leader_phone || 'N/A'}</span>
-                            </div>
-                            <div>
-                              <span className="text-slate-400 block text-[10px]">WhatsApp</span>
-                              {app?.whatsapp_link ? (
-                                <a href={app.whatsapp_link} target="_blank" rel="noopener noreferrer" className="text-emerald-400 font-bold hover:underline">
-                                  Group Link 🔗
-                                </a>
-                              ) : <span className="text-slate-500">N/A</span>}
-                            </div>
-                            <div className="col-span-2 pt-2 border-t border-slate-800/80 flex items-center justify-between">
-                              <div>
-                                <span className="text-slate-400 block text-[10px]">Password</span>
-                                <span className="font-mono font-bold text-amber-300 text-xs">
-                                  {visiblePasswords[comm.id] ? (app?.password || 'Not set') : '••••••••'}
-                                </span>
-                              </div>
-                              {app?.password && (
-                                <button
-                                  type="button"
-                                  onClick={() => setVisiblePasswords(prev => ({ ...prev, [comm.id]: !prev[comm.id] }))}
-                                  className="text-[11px] text-purple-400 hover:text-purple-300 font-bold bg-purple-950/40 px-2.5 py-1 rounded-lg border border-purple-500/30 transition-all"
-                                >
-                                  {visiblePasswords[comm.id] ? 'Hide' : 'Show Password'}
-                                </button>
-                              )}
-                            </div>
+                            ) : <span className="text-slate-500">N/A</span>}
                           </div>
-                        </div>
-                      </div>
-
-                      {/* Status Action Buttons */}
-                      <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800">
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => handleCommunityStatusChange(comm.id, 'approved')}
-                            className="py-2.5 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition-all"
-                          >
-                            ✓ Approve Status in Supabase
-                          </button>
-
-                          <button
-                            onClick={() => handleCommunityStatusChange(comm.id, 'rejected')}
-                            className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-rose-950 hover:text-rose-300 text-slate-300 font-bold text-xs border border-slate-700 transition-all"
-                          >
-                            Reject Status
-                          </button>
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleOpenEdit(comm)}
-                            className="py-2 px-4 rounded-xl bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-500/40 font-bold text-xs"
-                          >
-                            Edit Details
-                          </button>
-                          <button
-                            onClick={() => handleDeleteCommunity(comm.id, comm.name)}
-                            className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 border border-slate-800 text-xs font-bold"
-                          >
-                            🗑️
-                          </button>
+                          <div className="col-span-2 pt-2 border-t border-slate-800/80 flex items-center justify-between">
+                            <div>
+                              <span className="text-slate-400 block text-[10px]">Password</span>
+                              <span className="font-mono font-bold text-amber-300 text-xs">
+                                {visiblePasswords[comm.id] ? (app?.password || 'Not set') : '••••••••'}
+                              </span>
+                            </div>
+                            {app?.password && (
+                              <button
+                                type="button"
+                                onClick={() => setVisiblePasswords(prev => ({ ...prev, [comm.id]: !prev[comm.id] }))}
+                                className="text-[11px] text-purple-400 hover:text-purple-300 font-bold bg-purple-950/40 px-2.5 py-1 rounded-lg border border-purple-500/30 transition-all"
+                              >
+                                {visiblePasswords[comm.id] ? 'Hide' : 'Show Password'}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
 
-        {/* SECTION 2: INTERNSHIP APPLICATIONS */}
-        {mainSection === 'internships' && (
-          <div className="space-y-6">
-            {/* Stat Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-[#121827] border border-slate-800 rounded-2xl p-5 shadow-lg">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Total Applications</span>
-                <div className="text-2xl sm:text-3xl font-black text-white">{internshipStats.total}</div>
-              </div>
-              <div className="bg-[#121827] border border-amber-500/30 rounded-2xl p-5 shadow-lg bg-amber-500/5">
-                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block mb-1">Pending Review</span>
-                <div className="text-2xl sm:text-3xl font-black text-amber-300">{internshipStats.pending}</div>
-              </div>
-              <div className="bg-[#121827] border border-emerald-500/30 rounded-2xl p-5 shadow-lg bg-emerald-500/5">
-                <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block mb-1">Approved Candidates</span>
-                <div className="text-2xl sm:text-3xl font-black text-emerald-300">{internshipStats.approved}</div>
-              </div>
-              <div className="bg-[#121827] border border-slate-800 rounded-2xl p-5 shadow-lg">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">Rejected</span>
-                <div className="text-2xl sm:text-3xl font-black text-slate-400">{internshipStats.rejected}</div>
-              </div>
-            </div>
-
-            {/* Filter Tabs & Search */}
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-[#121827] p-4 rounded-2xl border border-slate-800">
-              <div className="flex flex-wrap items-center gap-2">
-                {[
-                  { id: 'pending', label: 'Pending Review', count: internshipStats.pending },
-                  { id: 'approved', label: 'Approved Candidates', count: internshipStats.approved },
-                  { id: 'all', label: 'All Applications', count: internshipStats.total },
-                  { id: 'rejected', label: 'Rejected', count: internshipStats.rejected },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`py-2 px-3.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 ${
-                      activeTab === tab.id
-                        ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
-                        : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400'
-                    }`}
-                  >
-                    <span>{tab.label}</span>
-                    <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-800 text-slate-300">{tab.count}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="relative min-w-[240px]">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search student, email, college..."
-                  className="w-full bg-[#1a2234] border border-slate-700/80 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all pr-8"
-                />
-              </div>
-            </div>
-
-            {/* List */}
-            {loading ? (
-              <div className="py-20 text-center">
-                <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-slate-400 text-xs font-bold">Loading internship applications from Supabase...</p>
-              </div>
-            ) : filteredInternships.length === 0 ? (
-              <div className="bg-[#121827] border border-slate-800 rounded-3xl p-12 text-center">
-                <p className="text-slate-400 text-xs">No internship applications found in Supabase matching current filters.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-6">
-                {filteredInternships.map((item) => {
-                  const isPending = item.status === 'pending';
-                  const isApproved = item.status === 'approved';
-
-                  return (
-                    <div
-                      key={item.id}
-                      className={`bg-[#121827] border rounded-3xl p-6 sm:p-8 transition-all relative shadow-xl ${
-                        isPending
-                          ? 'border-amber-500/40 bg-gradient-to-br from-[#121827] to-[#1a1712]'
-                          : isApproved
-                          ? 'border-emerald-500/30 bg-gradient-to-br from-[#121827] to-[#0f1d18]'
-                          : 'border-slate-800'
-                      }`}
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800/80">
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase inline-flex items-center gap-1.5 ${
-                              isPending
-                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                                : isApproved
-                                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                                : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                            }`}
-                          >
-                            {isPending ? 'Pending Approval' : isApproved ? 'Approved Candidate' : 'Rejected'}
-                          </span>
-                          <span className="text-[11px] text-slate-400">
-                            Applied: {new Date(item.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-
-                        <div className="text-xs font-bold text-purple-300 bg-purple-950/60 px-3 py-1 rounded-xl border border-purple-500/30">
-                          🎯 {item.program_title}
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div className="space-y-3">
-                          <div>
-                            <span className="text-[10px] font-black uppercase text-purple-400 block mb-1">Applicant Name</span>
-                            <h3 className="text-xl font-black text-white">{item.full_name}</h3>
-                          </div>
-
-                          <div className="text-xs space-y-1 text-slate-300">
-                            <div><span className="text-slate-400 font-medium">College:</span> <strong className="text-white">{item.college_name}</strong></div>
-                            {item.branch && <div><span className="text-slate-400 font-medium">Branch:</span> {item.branch} ({item.year || 'N/A'})</div>}
-                          </div>
-
-                          {item.github_url && (
-                            <div>
-                              <a href={item.github_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs text-purple-400 font-bold hover:underline">
-                                🐙 View GitHub / Portfolio 🔗
-                              </a>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="space-y-3 bg-slate-900/40 p-4 rounded-2xl border border-slate-800 text-xs">
-                          <span className="text-[10px] font-black uppercase text-amber-400 block mb-2 border-b border-slate-800 pb-1">
-                            Contact & Statements
-                          </span>
-                          <div><span className="text-slate-400 text-[10px] block">Email:</span> <a href={`mailto:${item.email}`} className="text-purple-300 font-semibold hover:underline">{item.email}</a></div>
-                          <div><span className="text-slate-400 text-[10px] block">Phone / WhatsApp:</span> <span className="font-semibold text-white">{item.phone}</span></div>
-                          {item.experience_notes && (
-                            <div className="pt-2 border-t border-slate-800">
-                              <span className="text-slate-400 text-[10px] block">Statement / Notes:</span>
-                              <p className="text-slate-300 italic">{item.experience_notes}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Status Action Buttons */}
-                      <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-800">
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => handleInternshipStatusChange(item.id, 'approved')}
-                            className="py-2.5 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition-all"
-                          >
-                            ✓ Approve Status in Supabase
-                          </button>
-
-                          <button
-                            onClick={() => handleInternshipStatusChange(item.id, 'rejected')}
-                            className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-rose-950 hover:text-rose-300 text-slate-300 font-bold text-xs border border-slate-700 transition-all"
-                          >
-                            Reject Status
-                          </button>
-                        </div>
+                    {/* Status Action Buttons */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => handleCommunityStatusChange(comm.id, 'approved')}
+                          className="py-2.5 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition-all"
+                        >
+                          ✓ Approve Status in Supabase
+                        </button>
 
                         <button
-                          onClick={() => handleDeleteInternship(item.id, item.full_name)}
+                          onClick={() => handleCommunityStatusChange(comm.id, 'rejected')}
+                          className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-rose-950 hover:text-rose-300 text-slate-300 font-bold text-xs border border-slate-700 transition-all"
+                        >
+                          Reject Status
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleOpenEdit(comm)}
+                          className="py-2 px-4 rounded-xl bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-500/40 font-bold text-xs"
+                        >
+                          Edit Details
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCommunity(comm.id, comm.name)}
                           className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 border border-slate-800 text-xs font-bold"
                         >
                           🗑️
                         </button>
                       </div>
-
                     </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* SECTION 3: CONTACT FORM SUBMISSIONS */}
-        {mainSection === 'contacts' && (
-          <div className="space-y-6">
-            {loading ? (
-              <div className="py-20 text-center">
-                <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                <p className="text-slate-400 text-xs font-bold">Loading contact messages from Supabase...</p>
-              </div>
-            ) : contacts.length === 0 ? (
-              <div className="bg-[#121827] border border-slate-800 rounded-3xl p-12 text-center">
-                <p className="text-slate-400 text-xs">No contact form messages found in Supabase.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4">
-                {contacts.map((msg) => (
-                  <div key={msg.id} className="bg-[#121827] border border-slate-800 rounded-2xl p-6 space-y-3 shadow-lg">
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
-                      <div>
-                        <h4 className="text-base font-black text-white">{msg.subject}</h4>
-                        <span className="text-xs text-purple-400 font-semibold">{msg.name} ({msg.email})</span>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-[11px] text-slate-500">
-                          {new Date(msg.created_at).toLocaleString()}
-                        </span>
-                        <button
-                          onClick={() => handleDeleteContact(msg.id)}
-                          className="py-1.5 px-3 rounded-lg bg-slate-900 hover:bg-rose-900/60 text-slate-400 hover:text-rose-300 border border-slate-800 text-xs font-bold"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-4 rounded-xl border border-slate-800 whitespace-pre-wrap">
-                      {msg.message}
-                    </p>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </div>
 
       </main>
 
