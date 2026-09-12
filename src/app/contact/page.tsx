@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import FadeIn from '@/components/animations/FadeIn';
 import { createClient } from '@/lib/supabase/client';
+import emailjs from '@emailjs/browser';
 
 export default function ContactPage() {
   const [loading, setLoading] = useState(false);
@@ -32,6 +33,23 @@ export default function ContactPage() {
 
       if (!res.ok) {
         throw new Error(data.error || 'Something went wrong. Please try again.');
+      }
+
+      // Send email notification via EmailJS (non-blocking)
+      try {
+        await emailjs.send(
+          process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+          process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+          {
+            from_name: name,
+            from_email: email,
+            subject: subject,
+            message: message,
+          },
+          process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!
+        );
+      } catch (emailErr) {
+        console.error('EmailJS error (non-blocking):', emailErr);
       }
 
       setSuccess(true);
