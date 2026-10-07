@@ -250,9 +250,7 @@ export default function Navbar() {
             >
               {/* 3D Neumorphic Drawer Header */}
               <div className="flex items-center justify-between pb-4 border-b border-purple-200/40 mb-3 shrink-0">
-                <div className="neu-convex p-1.5 rounded-2xl border border-white/80 shadow-sm">
-                  <Logo size="sm" suffix={isCommunityRoute ? 'Community' : undefined} />
-                </div>
+                <Logo size="sm" suffix={isCommunityRoute ? 'Community' : undefined} />
                 <button
                   onClick={() => setMobileOpen(false)}
                   className="w-9 h-9 neu-convex rounded-2xl flex items-center justify-center border border-purple-200/60 shadow-[3px_3px_8px_rgba(120,80,180,0.15),-3px_-3px_8px_#ffffff] text-slate-800 font-extrabold hover:text-purple-700 active:scale-95 transition-all"
