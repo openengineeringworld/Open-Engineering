@@ -1,8 +1,17 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Logo from '@/components/ui/Logo';
+
+interface NotificationBarData {
+  id: string;
+  text: string;
+  link: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
 
 interface CommunityRequest {
   id: string;
@@ -64,6 +73,13 @@ export default function AdminDashboardPage() {
   });
   const [savingEdit, setSavingEdit] = useState(false);
 
+  // Notification Bar states
+  const [notifBar, setNotifBar] = useState<NotificationBarData | null>(null);
+  const [notifText, setNotifText] = useState('');
+  const [notifLink, setNotifLink] = useState('');
+  const [notifSaving, setNotifSaving] = useState(false);
+  const [notifLoading, setNotifLoading] = useState(true);
+
   const router = useRouter();
 
   // Verify authentication and load initial data on mount
@@ -83,6 +99,7 @@ export default function AdminDashboardPage() {
 
         setAuthChecking(false);
         await refreshAllData();
+        await loadNotificationBar();
       } catch (err) {
         console.error('Auth verification error:', err);
         router.push('/admin');
@@ -91,11 +108,106 @@ export default function AdminDashboardPage() {
     init();
   }, [router]);
 
+  // Load Notification Bar
+  const loadNotificationBar = useCallback(async () => {
+    setNotifLoading(true);
+    try {
+      const res = await fetch('/api/admin/notification-bar?all=true');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.notification) {
+          setNotifBar(data.notification);
+          setNotifText(data.notification.text);
+          setNotifLink(data.notification.link);
+        } else {
+          setNotifBar(null);
+          setNotifText('');
+          setNotifLink('');
+        }
+      }
+    } catch (err) {
+      console.error('Error loading notification bar:', err);
+    } finally {
+      setNotifLoading(false);
+    }
+  }, []);
+
+  // Save or create notification bar
+  async function handleSaveNotifBar(e: React.FormEvent) {
+    e.preventDefault();
+    if (!notifText.trim() || !notifLink.trim()) {
+      setActionMessage({ type: 'error', text: 'Both notification text and link are required.' });
+      return;
+    }
+    setNotifSaving(true);
+    setActionMessage(null);
+    try {
+      const res = await fetch('/api/admin/notification-bar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: notifText.trim(), link: notifLink.trim(), is_active: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      setNotifBar(data.notification);
+      setActionMessage({ type: 'success', text: 'Notification bar updated successfully! It is now live on the website.' });
+    } catch (err: any) {
+      setActionMessage({ type: 'error', text: err?.message || 'Failed to save notification bar' });
+    } finally {
+      setNotifSaving(false);
+    }
+  }
+
+  // Toggle notification bar active/inactive
+  async function handleToggleNotifBar() {
+    if (!notifBar) return;
+    setNotifSaving(true);
+    setActionMessage(null);
+    try {
+      const res = await fetch('/api/admin/notification-bar', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: notifBar.id, is_active: !notifBar.is_active }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to toggle');
+      setNotifBar(data.notification);
+      setActionMessage({
+        type: 'success',
+        text: data.notification.is_active ? 'Notification bar is now LIVE on the website.' : 'Notification bar is now HIDDEN from the website.',
+      });
+    } catch (err: any) {
+      setActionMessage({ type: 'error', text: err?.message || 'Failed to toggle notification' });
+    } finally {
+      setNotifSaving(false);
+    }
+  }
+
+  // Delete notification bar
+  async function handleDeleteNotifBar() {
+    if (!notifBar) return;
+    if (!window.confirm('Are you sure you want to delete the notification bar?')) return;
+    setNotifSaving(true);
+    setActionMessage(null);
+    try {
+      const res = await fetch(`/api/admin/notification-bar?id=${notifBar.id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete');
+      setNotifBar(null);
+      setNotifText('');
+      setNotifLink('');
+      setActionMessage({ type: 'success', text: 'Notification bar deleted successfully.' });
+    } catch (err: any) {
+      setActionMessage({ type: 'error', text: err?.message || 'Failed to delete notification' });
+    } finally {
+      setNotifSaving(false);
+    }
+  }
+
   // Refresh dataset from Supabase APIs
   async function refreshAllData() {
     setLoading(true);
     try {
-      await loadCommunities();
+      await Promise.all([loadCommunities(), loadNotificationBar()]);
     } finally {
       setLoading(false);
     }
@@ -346,6 +458,134 @@ export default function AdminDashboardPage() {
             </button>
           </div>
         )}
+
+        {/* NOTIFICATION BUTTON MANAGER */}
+        <div className="bg-[#121827] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-purple-600/30">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-lg font-black text-white">Hero Notification Button</h2>
+                <p className="text-xs text-slate-400">One-line notification button displayed in the Hero section — redirects users when clicked</p>
+              </div>
+            </div>
+            {notifBar && (
+              <span className={`px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase ${notifBar.is_active ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-slate-700/40 text-slate-400 border border-slate-600'}`}>
+                {notifBar.is_active ? '● Live' : '○ Hidden'}
+              </span>
+            )}
+          </div>
+
+          {notifLoading ? (
+            <div className="py-8 text-center">
+              <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+              <p className="text-slate-400 text-xs">Loading notification...</p>
+            </div>
+          ) : (
+            <form onSubmit={handleSaveNotifBar} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">Notification Text</label>
+                  <input
+                    type="text"
+                    value={notifText}
+                    onChange={(e) => setNotifText(e.target.value)}
+                    placeholder="e.g. 🚀 We just launched our new Academy — Enroll now!"
+                    className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">Redirect Link</label>
+                  <input
+                    type="text"
+                    value={notifLink}
+                    onChange={(e) => setNotifLink(e.target.value)}
+                    placeholder="e.g. /academy or https://example.com"
+                    className="w-full bg-[#1a2234] border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-all"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Live Preview */}
+              {notifText.trim() && (
+                <div className="rounded-2xl border border-slate-800 bg-[#0d121f] p-4 sm:p-5">
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <p className="text-[11px] font-black uppercase tracking-wider text-slate-400">Website Live Preview</p>
+                    {notifLink.trim() && (
+                      <span className="text-xs text-purple-400 font-medium truncate max-w-xs">
+                        Redirects to: <span className="font-mono underline">{notifLink}</span>
+                      </span>
+                    )}
+                  </div>
+                  <div className="py-6 px-4 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-center">
+                    <div className="group inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100/90 border border-purple-300/80 text-purple-900 text-xs sm:text-sm font-bold shadow-[inset_1px_1px_3px_rgba(147,51,234,0.15),0_4px_12px_rgba(147,51,234,0.12)] cursor-pointer">
+                      <span className="relative flex h-2 w-2 shrink-0">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 ring-2 ring-emerald-400/30" />
+                      </span>
+                      <span className="truncate max-w-xs sm:max-w-md">{notifText}</span>
+                      <svg
+                        className="w-3.5 h-3.5 text-purple-700 transition-transform duration-200 group-hover:translate-x-1 shrink-0"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={notifSaving}
+                  className="py-2.5 px-5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-extrabold text-xs disabled:opacity-50 shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  {notifSaving ? 'Saving...' : notifBar ? 'Update & Publish' : 'Create & Publish'}
+                </button>
+
+                {notifBar && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleToggleNotifBar}
+                      disabled={notifSaving}
+                      className={`py-2.5 px-4 rounded-xl font-bold text-xs transition-all flex items-center gap-2 border ${
+                        notifBar.is_active
+                          ? 'bg-amber-500/10 text-amber-300 border-amber-500/40 hover:bg-amber-500/20'
+                          : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/20'
+                      }`}
+                    >
+                      {notifBar.is_active ? '⏸ Hide from Website' : '▶ Make Live'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDeleteNotifBar}
+                      disabled={notifSaving}
+                      className="py-2.5 px-4 rounded-xl bg-rose-500/10 text-rose-300 border border-rose-500/40 hover:bg-rose-500/20 font-bold text-xs transition-all flex items-center gap-2"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
+            </form>
+          )}
+        </div>
 
         {/* COMMUNITY APPLICATIONS & CHAPTERS */}
         <div className="space-y-6">

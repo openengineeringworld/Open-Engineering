@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
+import NotificationBar from '@/components/ui/NotificationBar';
 
 export const metadata: Metadata = {
   title: {
@@ -28,6 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="bg-background text-text antialiased">
+        <NotificationBar />
         <Navbar />
         <main className="min-h-screen">{children}</main>
         <Footer />
