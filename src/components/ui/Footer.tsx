@@ -14,7 +14,7 @@ const footerLinks = {
   career: [
     { href: '/jobs', label: 'Job Openings' },
     { href: '/internship', label: 'Internships' },
-    { href: '/academy', label: 'Engineering Academy' },
+    { href: '/academy', label: 'Academy' },
     { href: '/community', label: 'Campus Chapters' },
   ],
 };

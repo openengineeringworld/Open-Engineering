@@ -40,8 +40,8 @@ const careerPaths = [
     title: 'Open Engineering Academy',
     desc: 'Structured learning bootcamps, workshops, and hands-on hardware & software masterclasses taught by engineers.',
     href: '/academy',
-    count: 'Launching Soon ⚡',
-    badgeClass: 'badge-warning',
+    count: 'Registration Open 🚀',
+    badgeClass: 'badge-primary',
     icon: (
       <svg className="w-10 h-10 transition-transform duration-300 group-hover:scale-110" viewBox="0 0 48 48" fill="none">
         <path d="M8 12C8 9.79086 9.79086 8 12 8H24V38H12C9.79086 38 8 36.2091 8 34V12Z" className="fill-purple-100 stroke-purple-600" strokeWidth="2.5" />

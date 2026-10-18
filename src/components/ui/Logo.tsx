@@ -6,9 +6,10 @@ interface LogoProps {
   className?: string;
   href?: string;
   suffix?: string;
+  inlineSuffix?: string;
 }
 
-export default function Logo({ size = 'md', showText = true, className = '', href = '/', suffix }: LogoProps) {
+export default function Logo({ size = 'md', showText = true, className = '', href = '/', suffix, inlineSuffix }: LogoProps) {
   const badgeSizes = {
     sm: 'w-10 h-10 p-1.5 rounded-xl',
     md: 'w-12 h-12 p-2 rounded-2xl',
@@ -16,9 +17,9 @@ export default function Logo({ size = 'md', showText = true, className = '', hre
   };
 
   const textSizes = {
-    sm: 'text-lg',
-    md: 'text-xl',
-    lg: 'text-2xl',
+    sm: inlineSuffix ? 'text-sm sm:text-base' : 'text-lg',
+    md: inlineSuffix ? 'text-base sm:text-xl' : 'text-xl',
+    lg: inlineSuffix ? 'text-xl sm:text-2xl' : 'text-2xl',
   };
 
   const logoContent = (
@@ -37,6 +38,11 @@ export default function Logo({ size = 'md', showText = true, className = '', hre
         <div className="flex flex-col justify-center leading-tight select-none">
           <span className={`font-extrabold tracking-tight whitespace-nowrap ${textSizes[size]} text-slate-950 group-hover:text-purple-700 transition-colors`}>
             Open <span className="gradient-text-primary">Engineering</span>
+            {inlineSuffix && (
+              <span className="gradient-text-primary ml-1.5 sm:ml-2">
+                {inlineSuffix}
+              </span>
+            )}
           </span>
           {suffix && (
             <span className="text-[11px] sm:text-xs font-black tracking-widest text-purple-700 uppercase -mt-0.5">
